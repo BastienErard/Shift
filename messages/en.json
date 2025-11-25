@@ -23,5 +23,12 @@
 			"contextUnsupported": "2D context not supported",
 			"renderError": "Error rendering the scene"
 		}
+	},
+	"sceneSelector": {
+		"title": "Change scene",
+		"sunny": "Sunny",
+		"night": "Night",
+		"rainy": "Rainy",
+		"snowy": "Snowy"
 	}
 }

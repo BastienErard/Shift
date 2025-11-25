@@ -30,39 +30,6 @@ export function createSun(conditions: WorldConditions): Element[] {
 	// Soleil principal
 	elements.push(circle(position.x, position.y, radius, color));
 
-	/* Rayons du soleil (optionnel, pour effet visuel) */
-	if (conditions.weather === "clear") {
-		const rayLength = 15;
-		const rayWidth = 4;
-		const rayDistance = radius + 10;
-
-		// 8 rayons autour du soleil
-		const rayAngles = [0, 45, 90, 135, 180, 225, 270, 315];
-
-		for (const angle of rayAngles) {
-			const radians = (angle * Math.PI) / 180;
-			const rayX = position.x + Math.cos(radians) * rayDistance - rayWidth / 2;
-			const rayY = position.y + Math.sin(radians) * rayDistance - rayLength / 2;
-
-			// Rayons horizontaux ou verticaux selon l'angle
-			if (angle % 90 === 0) {
-				// Rayons cardinaux (plus longs)
-				if (angle === 0 || angle === 180) {
-					elements.push(
-						rectangle(rayX, rayY + rayLength / 2 - rayWidth / 2, rayLength, rayWidth, color)
-					);
-				} else {
-					elements.push(
-						rectangle(rayX + rayLength / 2 - rayWidth / 2, rayY, rayWidth, rayLength, color)
-					);
-				}
-			} else {
-				// Rayons diagonaux (petits carrés)
-				elements.push(rectangle(rayX + rayLength / 2 - 3, rayY + rayLength / 2 - 3, 6, 6, color));
-			}
-		}
-	}
-
 	return elements;
 }
 

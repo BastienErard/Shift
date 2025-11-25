@@ -1,43 +1,38 @@
 import type { Scene, Element, Color } from "./types";
-import { colorToString, PIXEL_RATIO } from "./types";
+import { colorToString, PIXEL_RATIO, DISPLAY_WIDTH, DISPLAY_HEIGHT } from "./types";
 
-/* Rend une scène complète sur un canvas */
+/* Renderer Canvas pour Shift */
 export function renderScene(ctx: CanvasRenderingContext2D, scene: Scene): void {
-	/* Applique le scaling Retina */
-	ctx.save(); // Sauvegarde l'état du contexte
-	ctx.scale(PIXEL_RATIO, PIXEL_RATIO);
+	ctx.save();
 
-	/* Efface le canvas */
+	// Efface le canvas
 	clearCanvas(ctx, scene);
 
-	/* Dessine le fond (ciel + sol) */
+	// Dessine le fond (ciel + sol)
 	drawBackground(ctx, scene);
 
-	/* Dessine tous les éléments */
+	// Dessine tous les éléments
 	for (const element of scene.elements) {
 		drawElement(ctx, element);
 	}
 
-	/* Restaure l'état du contexte */
 	ctx.restore();
 }
 
 /* Efface le canvas */
 function clearCanvas(ctx: CanvasRenderingContext2D, scene: Scene): void {
-	/* clearRect() efface une zone rectangulaire */
-	ctx.clearRect(0, 0, scene.dimensions.width / PIXEL_RATIO, scene.dimensions.height / PIXEL_RATIO);
+	ctx.clearRect(0, 0, scene.dimensions.width, scene.dimensions.height);
 }
 
 /* Dessine le fond (ciel + sol) */
 function drawBackground(ctx: CanvasRenderingContext2D, scene: Scene): void {
-	const width = scene.dimensions.width / PIXEL_RATIO;
-	const height = scene.dimensions.height / PIXEL_RATIO;
+	const { width, height } = scene.dimensions;
 
-	/* Ciel (moitié supérieure environ) */
+	// Ciel (toute la surface)
 	ctx.fillStyle = colorToString(scene.skyColor);
 	ctx.fillRect(0, 0, width, height);
 
-	/* Sol (moitié inférieure) */
+	// Sol (40% inférieur)
 	const horizonY = height * 0.4;
 	ctx.fillStyle = colorToString(scene.groundColor);
 	ctx.fillRect(0, horizonY, width, height - horizonY);
@@ -59,9 +54,8 @@ function drawElement(ctx: CanvasRenderingContext2D, element: Element): void {
 			break;
 
 		default:
-			/* TypeScript exhaustiveness check*/
 			const exhaustiveCheck: never = element;
-			console.warn("Type d'élément non géré :", exhaustiveCheck);
+			console.warn("Type d'élément non géré:", exhaustiveCheck);
 	}
 }
 
@@ -70,8 +64,6 @@ function drawRectangle(
 	ctx: CanvasRenderingContext2D,
 	rect: Extract<Element, { type: "rectangle" }>
 ): void {
-	/* Extract<Element, { type: "rectangle" }> */
-
 	ctx.fillStyle = colorToString(rect.color);
 	ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 }
@@ -82,9 +74,9 @@ function drawCircle(
 	circ: Extract<Element, { type: "circle" }>
 ): void {
 	ctx.fillStyle = colorToString(circ.color);
-	ctx.beginPath(); // Commence un nouveau chemin
+	ctx.beginPath();
 	ctx.arc(circ.x, circ.y, circ.radius, 0, Math.PI * 2);
-	ctx.fill(); // Remplit le chemin
+	ctx.fill();
 }
 
 /* Dessine une grille de pixels */
@@ -94,20 +86,13 @@ function drawPixelGrid(
 ): void {
 	ctx.fillStyle = colorToString(grid.color);
 
-	// Parcourt chaque ligne
 	for (let row = 0; row < grid.pixels.length; row++) {
 		const rowData = grid.pixels[row];
 
-		// Parcourt chaque colonne de cette ligne
 		for (let col = 0; col < rowData.length; col++) {
-			const shouldDraw = rowData[col];
-
-			// Ne dessine que si true
-			if (shouldDraw) {
+			if (rowData[col]) {
 				const pixelX = grid.x + col * grid.pixelSize;
 				const pixelY = grid.y + row * grid.pixelSize;
-
-				/* Dessine un petit rectangle pour ce pixel */
 				ctx.fillRect(pixelX, pixelY, grid.pixelSize, grid.pixelSize);
 			}
 		}
@@ -125,7 +110,7 @@ export function fillCanvas(
 	ctx.fillRect(0, 0, width, height);
 }
 
-/* Dessine du texte centré sur le canvas */
+/* Dessine du texte centré */
 export function drawText(
 	ctx: CanvasRenderingContext2D,
 	text: string,
@@ -135,7 +120,7 @@ export function drawText(
 	fontSize: number = 16
 ): void {
 	ctx.fillStyle = colorToString(color);
-	ctx.font = `${fontSize}px monospace`; // Police monospace (pixel art style)
+	ctx.font = `${fontSize}px monospace`;
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
 	ctx.fillText(text, x, y);
