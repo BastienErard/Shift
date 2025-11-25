@@ -14,5 +14,14 @@
 				"seasons": "Seasons progress over time"
 			}
 		}
+	},
+	"canvas": {
+		"ariaLabel": "Shift's evolving pixel art scene",
+		"loading": "Loading...",
+		"errors": {
+			"canvasUnavailable": "Canvas unavailable",
+			"contextUnsupported": "2D context not supported",
+			"renderError": "Error rendering the scene"
+		}
 	}
 }
