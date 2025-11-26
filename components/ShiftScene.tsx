@@ -1,57 +1,68 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
 import { PixelCanvas } from "@/components/canvas";
 
-/* Types pour les presets de scène */
 type ScenePreset = "sunny" | "night" | "rainy" | "snowy";
 
-/* Configuration des boutons de scène */
-const SCENE_PRESETS: { id: ScenePreset; emoji: string; labelKey: string }[] = [
+interface ShiftSceneProps {
+	translations: {
+		title: string;
+		sunny: string;
+		night: string;
+		rainy: string;
+		snowy: string;
+	};
+}
+
+const SCENE_PRESETS: {
+	id: ScenePreset;
+	emoji: string;
+	labelKey: "sunny" | "night" | "rainy" | "snowy";
+}[] = [
 	{ id: "sunny", emoji: "☀️", labelKey: "sunny" },
 	{ id: "night", emoji: "🌙", labelKey: "night" },
 	{ id: "rainy", emoji: "🌧️", labelKey: "rainy" },
 	{ id: "snowy", emoji: "❄️", labelKey: "snowy" },
 ];
 
-/* Composant ShiftScene */
-export default function ShiftScene() {
-	const t = useTranslations("sceneSelector");
-
-	/* State : preset de scène actuellement sélectionné */
+export default function ShiftScene({ translations }: ShiftSceneProps) {
 	const [selectedPreset, setSelectedPreset] = useState<ScenePreset>("sunny");
 
 	return (
-		<div className="flex flex-col items-center gap-6">
-			{/* Canvas pixel art */}
-			<PixelCanvas mode="test" testPreset={selectedPreset} />
+		<div className="flex flex-col items-center gap-6 w-full overflow-hidden">
+			{/* Canvas */}
+			<div className="w-full max-w-[400px] mx-auto">
+				<div className="rounded-xl overflow-hidden shadow-lg ring-1 ring-gray-200 dark:ring-gray-700">
+					<PixelCanvas mode="test" testPreset={selectedPreset} />
+				</div>
+			</div>
 
-			{/* Sélecteur de scène */}
-			<section className="flex flex-col items-center gap-3">
-				<p className="text-sm text-gray-500 dark:text-gray-400">{t("title")}</p>
+			{/* Sélecteur */}
+			<div className="flex flex-col items-center gap-3 w-full px-4">
+				<p className="text-sm text-gray-500 dark:text-gray-400">{translations.title}</p>
 
-				<div className="flex gap-2 flex-wrap justify-center">
+				<div className="flex flex-wrap justify-center gap-2">
 					{SCENE_PRESETS.map((preset) => (
 						<button
 							key={preset.id}
 							onClick={() => setSelectedPreset(preset.id)}
 							className={`
-								px-4 py-2 rounded-lg transition-all text-sm
+								flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+								transition-all duration-200 cursor-pointer
 								${
 									selectedPreset === preset.id
-										? "bg-blue-500 text-white shadow-md scale-105"
-										: "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+										? "bg-sky-500 text-white shadow-md"
+										: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
 								}
 							`}
-							aria-pressed={selectedPreset === preset.id}
-							aria-label={`${t(preset.labelKey)}`}
 						>
-							{preset.emoji} {t(preset.labelKey)}
+							<span>{preset.emoji}</span>
+							<span>{translations[preset.labelKey]}</span>
 						</button>
 					))}
 				</div>
-			</section>
+			</div>
 		</div>
 	);
 }

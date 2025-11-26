@@ -1,17 +1,23 @@
 {
 	"metadata": {
 		"title": "Shift - An evolving pixel art world",
-		"description": "A generative scene that evolves with weather, time and seasons."
+		"description": "A generative pixel art scene that evolves with weather, time and seasons."
 	},
 	"home": {
 		"title": "Shift",
 		"subtitle": "A pixel art world that evolves with weather and time.",
-		"description": {
-			"intro": "Welcome to Shift, a contemplative pixel art world that breathes and evolves.",
-			"features": {
-				"weather": "Real weather influences the landscape",
-				"time": "The atmosphere changes with the time of day",
-				"seasons": "Seasons progress over time"
+		"features": {
+			"weather": {
+				"title": "Real weather",
+				"description": "The landscape adapts to current weather conditions."
+			},
+			"time": {
+				"title": "Day/night cycle",
+				"description": "The atmosphere changes with the time of day."
+			},
+			"seasons": {
+				"title": "Seasons",
+				"description": "The world evolves from spring to winter."
 			}
 		}
 	},
@@ -30,5 +36,8 @@
 		"night": "Night",
 		"rainy": "Rainy",
 		"snowy": "Snowy"
+	},
+	"footer": {
+		"projectCredit": "Project #5To35 — A creative challenge before turning 35"
 	}
 }
