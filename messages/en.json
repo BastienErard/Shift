@@ -21,6 +21,43 @@
 			}
 		}
 	},
+	"sceneSelector": {
+		"title": "Change scene",
+		"sunny": "Sunny",
+		"night": "Night",
+		"rainy": "Rainy",
+		"snowy": "Snowy"
+	},
+	"simulation": {
+		"title": "Settings",
+		"timeOfDay": {
+			"label": "Time of day",
+			"dawn": "Dawn",
+			"morning": "Morning",
+			"noon": "Noon",
+			"afternoon": "Afternoon",
+			"dusk": "Dusk",
+			"night": "Night"
+		},
+		"season": {
+			"label": "Season",
+			"spring": "Spring",
+			"summer": "Summer",
+			"autumn": "Autumn",
+			"winter": "Winter"
+		},
+		"weather": {
+			"label": "Weather",
+			"clear": "Clear",
+			"cloudy": "Cloudy",
+			"rainy": "Rainy",
+			"snowy": "Snowy",
+			"stormy": "Stormy"
+		},
+		"temperature": {
+			"label": "Temperature"
+		}
+	},
 	"canvas": {
 		"ariaLabel": "Shift's evolving pixel art scene",
 		"loading": "Loading...",
@@ -29,13 +66,6 @@
 			"contextUnsupported": "2D context not supported",
 			"renderError": "Error rendering the scene"
 		}
-	},
-	"sceneSelector": {
-		"title": "Change scene",
-		"sunny": "Sunny",
-		"night": "Night",
-		"rainy": "Rainy",
-		"snowy": "Snowy"
 	},
 	"footer": {
 		"projectCredit": "Project #5To35 — A creative challenge before turning 35"

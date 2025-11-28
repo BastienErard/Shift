@@ -21,6 +21,43 @@
 			}
 		}
 	},
+	"sceneSelector": {
+		"title": "Changer de scène",
+		"sunny": "Ensoleillé",
+		"night": "Nuit",
+		"rainy": "Pluvieux",
+		"snowy": "Neigeux"
+	},
+	"simulation": {
+		"title": "Paramètres",
+		"timeOfDay": {
+			"label": "Moment du jour",
+			"dawn": "Aube",
+			"morning": "Matin",
+			"noon": "Midi",
+			"afternoon": "Après-midi",
+			"dusk": "Crépuscule",
+			"night": "Nuit"
+		},
+		"season": {
+			"label": "Saison",
+			"spring": "Printemps",
+			"summer": "Été",
+			"autumn": "Automne",
+			"winter": "Hiver"
+		},
+		"weather": {
+			"label": "Météo",
+			"clear": "Dégagé",
+			"cloudy": "Nuageux",
+			"rainy": "Pluvieux",
+			"snowy": "Neigeux",
+			"stormy": "Orageux"
+		},
+		"temperature": {
+			"label": "Température"
+		}
+	},
 	"canvas": {
 		"ariaLabel": "Scène pixel art évolutive de Shift",
 		"loading": "Chargement...",
@@ -29,13 +66,6 @@
 			"contextUnsupported": "Contexte 2D non supporté",
 			"renderError": "Erreur lors du rendu de la scène"
 		}
-	},
-	"sceneSelector": {
-		"title": "Changer de scène",
-		"sunny": "Ensoleillé",
-		"night": "Nuit",
-		"rainy": "Pluvieux",
-		"snowy": "Neigeux"
 	},
 	"footer": {
 		"projectCredit": "Projet #5To35 — Un défi créatif avant mes 35 ans"

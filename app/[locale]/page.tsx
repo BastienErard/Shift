@@ -1,38 +1,65 @@
+// app/[locale]/page.tsx
+
 import { useTranslations } from "next-intl";
 import ShiftScene from "@/components/ShiftScene";
 
 export default function Home() {
 	const t = useTranslations("home");
-	const tScene = useTranslations("sceneSelector");
+	const tSim = useTranslations("simulation");
 
-	const sceneTranslations = {
-		title: tScene("title"),
-		sunny: tScene("sunny"),
-		night: tScene("night"),
-		rainy: tScene("rainy"),
-		snowy: tScene("snowy"),
+	const translations = {
+		simulation: {
+			title: tSim("title"),
+			timeOfDay: {
+				label: tSim("timeOfDay.label"),
+				dawn: tSim("timeOfDay.dawn"),
+				morning: tSim("timeOfDay.morning"),
+				noon: tSim("timeOfDay.noon"),
+				afternoon: tSim("timeOfDay.afternoon"),
+				dusk: tSim("timeOfDay.dusk"),
+				night: tSim("timeOfDay.night"),
+			},
+			season: {
+				label: tSim("season.label"),
+				spring: tSim("season.spring"),
+				summer: tSim("season.summer"),
+				autumn: tSim("season.autumn"),
+				winter: tSim("season.winter"),
+			},
+			weather: {
+				label: tSim("weather.label"),
+				clear: tSim("weather.clear"),
+				cloudy: tSim("weather.cloudy"),
+				rainy: tSim("weather.rainy"),
+				snowy: tSim("weather.snowy"),
+				stormy: tSim("weather.stormy"),
+			},
+			temperature: {
+				label: tSim("temperature.label"),
+			},
+		},
 	};
 
 	return (
 		<div className="w-full">
 			{/* Hero Section */}
-			<section className="max-w-4xl mx-auto px-4 sm:px-6 pt-12 pb-8 text-center">
-				<h1 className="text-4xl sm:text-5xl font-bold mb-4">
-					<span className="bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">
-						{t("title")}
-					</span>
+			<section className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-4 text-center">
+				<h1 className="text-3xl sm:text-4xl font-bold mb-2 text-sky-600 dark:text-sky-400">
+					{t("title")}
 				</h1>
-				<p className="text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto">{t("subtitle")}</p>
+				<p className="text-base text-gray-600 dark:text-gray-400 max-w-lg mx-auto">
+					{t("subtitle")}
+				</p>
 			</section>
 
-			{/* Canvas Section */}
-			<section className="py-8">
-				<ShiftScene translations={sceneTranslations} />
+			{/* Canvas + Simulation Section */}
+			<section className="py-6">
+				<ShiftScene translations={translations} />
 			</section>
 
 			{/* Features Section */}
-			<section className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
-				<div className="grid sm:grid-cols-3 gap-6">
+			<section className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+				<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 					<FeatureCard
 						emoji="🌦️"
 						title={t("features.weather.title")}
@@ -64,10 +91,12 @@ function FeatureCard({
 	description: string;
 }) {
 	return (
-		<div className="p-5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-sky-300 dark:hover:border-sky-700 hover:shadow-lg transition-all duration-200">
-			<div className="text-3xl mb-3">{emoji}</div>
-			<h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">{title}</h3>
-			<p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+		<div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-sky-300 dark:hover:border-sky-700 hover:shadow-lg transition-all duration-200">
+			<div className="flex items-center gap-3 mb-2">
+				<span className="text-2xl">{emoji}</span>
+				<h3 className="text-sm font-semibold text-gray-900 dark:text-white">{title}</h3>
+			</div>
+			<p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{description}</p>
 		</div>
 	);
 }

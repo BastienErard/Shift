@@ -1,49 +1,29 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
 import type { Scene } from "@/lib/canvas/types";
-import {
-	CANVAS_WIDTH,
-	CANVAS_HEIGHT,
-	DISPLAY_WIDTH,
-	DISPLAY_HEIGHT,
-	rgb,
-} from "@/lib/canvas/types";
-import { renderScene, fillCanvas, drawText } from "@/lib/canvas/renderer";
-import { buildTestScene, buildSceneFromCurrentTime } from "@/lib/canvas/builder";
+import type { WorldConditions } from "@/lib/canvas/conditions";
+import { CANVAS_WIDTH, CANVAS_HEIGHT, DISPLAY_WIDTH, DISPLAY_HEIGHT } from "@/lib/canvas/types";
+import { renderScene } from "@/lib/canvas/renderer";
+import { buildTestScene, buildScene } from "@/lib/canvas/builder";
 
-/* Props du composant PixelCanvas */
 interface PixelCanvasProps {
-	/* Mode de rendu
-	 * - "live" : Utilise l'heure système (production)
-	 * - "test" : Utilise un preset de test */
-	mode?: "live" | "test";
-
-	/* Preset de test (si mode = "test") */
+	mode?: "test" | "simulation" | "live";
 	testPreset?: "sunny" | "night" | "rainy" | "snowy";
-
-	/* Classe CSS additionnelle */
+	conditions?: WorldConditions;
 	className?: string;
 }
 
-/* Composant PixelCanvas */
 export default function PixelCanvas({
 	mode = "test",
 	testPreset = "sunny",
+	conditions,
 	className = "",
 }: PixelCanvasProps) {
-	const t = useTranslations("canvas");
-
-	/* Référence vers l'élément canvas */
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-
-	/* État d'erreur */
 	const [error, setError] = useState<string | null>(null);
 
-	/* Effet de rendu */
 	useEffect(() => {
-		// Récupère l'élément canvas
 		const canvas = canvasRef.current;
 
 		if (!canvas) {
@@ -51,7 +31,6 @@ export default function PixelCanvas({
 			return;
 		}
 
-		/* Obtient le contexte 2D */
 		const ctx = canvas.getContext("2d");
 
 		if (!ctx) {
@@ -60,46 +39,45 @@ export default function PixelCanvas({
 		}
 
 		try {
-			/* Construit la scène selon le mode*/
 			let scene: Scene;
 
-			if (mode === "live") {
-				// Mode production : utilise l'heure système
-				scene = buildSceneFromCurrentTime();
-			} else {
-				// Mode test : utilise le preset choisi
+			if (mode === "simulation" && conditions) {
+				scene = buildScene(conditions);
+			} else if (mode === "test") {
 				scene = buildTestScene(testPreset);
+			} else {
+				scene = buildTestScene("sunny");
 			}
-			/* Rend la scène sur le canvas */
-			renderScene(ctx, scene);
 
-			// Marque comme chargé
+			renderScene(ctx, scene);
 			setError(null);
 		} catch (err) {
-			console.error("Erreur de rendu :", err);
-			setError("Erreur lors du rendu de la scène");
+			console.error("Erreur de rendu:", err);
+			setError("Erreur lors du rendu");
 		}
-	}, [mode, testPreset]);
+	}, [mode, testPreset, conditions]);
 
 	return (
-		<div className={`relative ${className}`}>
-			{/* Élément Canvas*/}
-			<canvas
-				ref={canvasRef}
-				width={CANVAS_WIDTH}
-				height={CANVAS_HEIGHT}
-				style={{
-					width: DISPLAY_WIDTH,
-					height: DISPLAY_HEIGHT,
-				}}
-				className="border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg"
-				aria-label={t("ariaLabel")}
-				role="img"
-			/>
+		<div className={`relative w-full ${className}`}>
+			{/*
+				Aspect ratio container :
+				Le canvas a un ratio de 400:300 = 4:3
+				On utilise aspect-[4/3] pour maintenir ce ratio
+			*/}
+			<div className="relative w-full aspect-[4/3]">
+				<canvas
+					ref={canvasRef}
+					width={CANVAS_WIDTH}
+					height={CANVAS_HEIGHT}
+					className="absolute inset-0 w-full h-full"
+					style={{
+						imageRendering: "pixelated", // Garde les pixels nets
+					}}
+					aria-label="Scène pixel art évolutive de Shift"
+					role="img"
+				/>
+			</div>
 
-			{/**
-			 * Message d'erreur
-			 */}
 			{error && (
 				<div className="absolute inset-0 flex items-center justify-center bg-red-100 dark:bg-red-900 rounded-lg">
 					<p className="text-red-600 dark:text-red-200 text-sm">{error}</p>
