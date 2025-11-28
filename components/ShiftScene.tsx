@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { PixelCanvas } from "@/components/canvas";
 import { useWeather } from "@/lib/hooks/useWeather";
 import { useCurrentTime } from "@/lib/hooks/useCurrentTime";
+import { useGeolocation } from "@/lib/hooks/useGeolocation";
 import { weatherToConditions } from "@/lib/utils/conditions";
-import { DEFAULT_LOCATION } from "@/lib/api/weather";
+import { DEFAULT_LOCATION, createLocationFromCoords } from "@/lib/api/weather";
+import type { Location } from "@/lib/api/weather";
 import type { WorldConditions, TimeOfDay, Season, Weather } from "@/lib/canvas/conditions";
 
 interface ShiftSceneProps {
@@ -17,6 +19,7 @@ interface ShiftSceneProps {
 				manual: string;
 			};
 			location: string;
+			myLocation: string;
 			timeOfDay: {
 				label: string;
 				dawn: string;
@@ -66,13 +69,24 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 	// Conditions manuelles
 	const [manualConditions, setManualConditions] = useState<WorldConditions>(DEFAULT_CONDITIONS);
 
+	// Géolocalisation
+	const geolocation = useGeolocation();
+
+	// Détermine la location à utiliser
+	const currentLocation: Location = useMemo(() => {
+		if (geolocation.latitude && geolocation.longitude) {
+			return createLocationFromCoords(geolocation.latitude, geolocation.longitude, t.myLocation);
+		}
+		return DEFAULT_LOCATION;
+	}, [geolocation.latitude, geolocation.longitude, t.myLocation]);
+
 	// Hooks pour le mode LIVE
 	const {
 		data: weatherData,
 		isLoading,
 		error,
 	} = useWeather({
-		location: DEFAULT_LOCATION,
+		location: currentLocation,
 		enabled: mode === "live",
 	});
 
@@ -101,6 +115,17 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 	) => {
 		setManualConditions((prev) => ({ ...prev, [key]: value }));
 	};
+
+	// Détermine le texte de localisation à afficher
+	const locationDisplay = useMemo(() => {
+		if (geolocation.isLoading) {
+			return "📍 Localisation...";
+		}
+		if (geolocation.error || !geolocation.latitude) {
+			return `📍 ${DEFAULT_LOCATION.name}`;
+		}
+		return `📍 ${t.myLocation}`;
+	}, [geolocation, t.myLocation]);
 
 	return (
 		<div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-4 w-full max-w-5xl mx-auto px-4">
@@ -145,8 +170,7 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 						) : (
 							<div className="space-y-1">
 								<div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-									<span>📍</span>
-									<span>{DEFAULT_LOCATION.name}</span>
+									<span>{locationDisplay}</span>
 								</div>
 								<div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
 									<span>📅</span>

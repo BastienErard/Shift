@@ -15,6 +15,7 @@ export default function Home() {
 				manual: tSim("mode.manual"),
 			},
 			location: tSim("location"),
+			myLocation: tSim("myLocation"),
 			timeOfDay: {
 				label: tSim("timeOfDay.label"),
 				dawn: tSim("timeOfDay.dawn"),

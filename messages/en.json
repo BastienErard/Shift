@@ -35,6 +35,7 @@
 			"manual": "Manual"
 		},
 		"location": "Location",
+		"myLocation": "My location",
 		"timeOfDay": {
 			"label": "Time of day",
 			"dawn": "Dawn",

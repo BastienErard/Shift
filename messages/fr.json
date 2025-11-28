@@ -35,6 +35,7 @@
 			"manual": "Manuel"
 		},
 		"location": "Lieu",
+		"myLocation": "Ma position",
 		"timeOfDay": {
 			"label": "Moment du jour",
 			"dawn": "Aube",

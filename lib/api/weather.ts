@@ -148,3 +148,16 @@ export function weatherCodeToIntensity(code: number): WeatherIntensity {
 	// Par défaut : modérée
 	return "moderate";
 }
+
+/* Crée une Location à partir de coordonnées GPS */
+export function createLocationFromCoords(
+	latitude: number,
+	longitude: number,
+	name: string = "Ma position"
+): Location {
+	return {
+		name,
+		latitude,
+		longitude,
+	};
+}

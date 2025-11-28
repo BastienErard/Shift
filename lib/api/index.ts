@@ -1,9 +1,8 @@
-// lib/api/index.ts
-
 export {
 	fetchWeather,
 	weatherCodeToWeather,
 	weatherCodeToIntensity,
+	createLocationFromCoords,
 	LOCATIONS,
 	DEFAULT_LOCATION,
 	type WeatherData,
