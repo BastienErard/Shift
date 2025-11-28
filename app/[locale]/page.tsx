@@ -10,6 +10,11 @@ export default function Home() {
 	const translations = {
 		simulation: {
 			title: tSim("title"),
+			mode: {
+				live: tSim("mode.live"),
+				manual: tSim("mode.manual"),
+			},
+			location: tSim("location"),
 			timeOfDay: {
 				label: tSim("timeOfDay.label"),
 				dawn: tSim("timeOfDay.dawn"),
@@ -30,9 +35,9 @@ export default function Home() {
 				label: tSim("weather.label"),
 				clear: tSim("weather.clear"),
 				cloudy: tSim("weather.cloudy"),
-				rainy: tSim("weather.rainy"),
-				snowy: tSim("weather.snowy"),
-				stormy: tSim("weather.stormy"),
+				rain: tSim("weather.rain"),
+				snow: tSim("weather.snow"),
+				storm: tSim("weather.storm"),
 			},
 			temperature: {
 				label: tSim("temperature.label"),

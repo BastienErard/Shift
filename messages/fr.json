@@ -30,6 +30,11 @@
 	},
 	"simulation": {
 		"title": "Paramètres",
+		"mode": {
+			"live": "Live",
+			"manual": "Manuel"
+		},
+		"location": "Lieu",
 		"timeOfDay": {
 			"label": "Moment du jour",
 			"dawn": "Aube",
@@ -50,9 +55,9 @@
 			"label": "Météo",
 			"clear": "Dégagé",
 			"cloudy": "Nuageux",
-			"rainy": "Pluvieux",
-			"snowy": "Neigeux",
-			"stormy": "Orageux"
+			"rain": "Pluvieux",
+			"snow": "Neigeux",
+			"storm": "Orageux"
 		},
 		"temperature": {
 			"label": "Température"

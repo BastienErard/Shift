@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import type { Scene } from "@/lib/canvas/types";
 import type { WorldConditions } from "@/lib/canvas/conditions";
-import { CANVAS_WIDTH, CANVAS_HEIGHT, DISPLAY_WIDTH, DISPLAY_HEIGHT } from "@/lib/canvas/types";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/canvas/types";
 import { renderScene } from "@/lib/canvas/renderer";
 import { buildTestScene, buildScene } from "@/lib/canvas/builder";
 
@@ -58,28 +58,21 @@ export default function PixelCanvas({
 	}, [mode, testPreset, conditions]);
 
 	return (
-		<div className={`relative w-full ${className}`}>
-			{/*
-				Aspect ratio container :
-				Le canvas a un ratio de 400:300 = 4:3
-				On utilise aspect-[4/3] pour maintenir ce ratio
-			*/}
-			<div className="relative w-full aspect-[4/3]">
-				<canvas
-					ref={canvasRef}
-					width={CANVAS_WIDTH}
-					height={CANVAS_HEIGHT}
-					className="absolute inset-0 w-full h-full"
-					style={{
-						imageRendering: "pixelated", // Garde les pixels nets
-					}}
-					aria-label="Scène pixel art évolutive de Shift"
-					role="img"
-				/>
-			</div>
+		<div className={`relative ${className}`} style={{ aspectRatio: "4 / 3" }}>
+			<canvas
+				ref={canvasRef}
+				width={CANVAS_WIDTH}
+				height={CANVAS_HEIGHT}
+				className="absolute inset-0 w-full h-full rounded-xl"
+				style={{
+					imageRendering: "pixelated",
+				}}
+				aria-label="Scène pixel art évolutive de Shift"
+				role="img"
+			/>
 
 			{error && (
-				<div className="absolute inset-0 flex items-center justify-center bg-red-100 dark:bg-red-900 rounded-lg">
+				<div className="absolute inset-0 flex items-center justify-center bg-red-100 dark:bg-red-900 rounded-xl">
 					<p className="text-red-600 dark:text-red-200 text-sm">{error}</p>
 				</div>
 			)}

@@ -30,6 +30,11 @@
 	},
 	"simulation": {
 		"title": "Settings",
+		"mode": {
+			"live": "Live",
+			"manual": "Manual"
+		},
+		"location": "Location",
 		"timeOfDay": {
 			"label": "Time of day",
 			"dawn": "Dawn",
@@ -50,9 +55,9 @@
 			"label": "Weather",
 			"clear": "Clear",
 			"cloudy": "Cloudy",
-			"rainy": "Rainy",
-			"snowy": "Snowy",
-			"stormy": "Stormy"
+			"rain": "Rainy",
+			"snow": "Snowy",
+			"storm": "Stormy"
 		},
 		"temperature": {
 			"label": "Temperature"
