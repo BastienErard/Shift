@@ -11,7 +11,11 @@ import {
 } from "./elements";
 
 /* Construit une scène complète selon les conditions actuelles */
-export function buildScene(conditions: WorldConditions, cloudCover?: number): Scene {
+export function buildScene(
+	conditions: WorldConditions,
+	cloudCover?: number,
+	smokeOffset: number = 0
+): Scene {
 	/* Couleurs de base de la scène */
 	const skyColor = getSkyColor(conditions);
 	const groundColor = getGroundColor(conditions);
@@ -39,8 +43,8 @@ export function buildScene(conditions: WorldConditions, cloudCover?: number): Sc
 		// AVANT : Effets dynamiques
 		// ============================================
 
-		/* Fumée de cheminée */
-		...createChimneySmoke(conditions),
+		/* Fumée de cheminée avec animation */
+		...createChimneySmoke(conditions, smokeOffset),
 
 		// ============================================
 		// PREMIER PLAN : Météo

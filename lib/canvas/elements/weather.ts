@@ -7,6 +7,7 @@ import { getPrecipitationColor } from "../palette";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../types";
 import { hasPrecipitation } from "../conditions";
 import { getCloudBottomY } from "./sky";
+import { calculateWindOffset } from "../utils/wind";
 
 /**
  * Crée les gouttes de pluie
@@ -23,7 +24,6 @@ export function createRain(conditions: WorldConditions): Element[] {
 	const elements: Element[] = [];
 	const color = getPrecipitationColor(conditions);
 
-	// Nombre de gouttes selon l'intensité
 	const dropCounts = {
 		light: 25,
 		moderate: 50,
@@ -32,7 +32,6 @@ export function createRain(conditions: WorldConditions): Element[] {
 
 	const dropCount = dropCounts[weatherIntensity];
 
-	// Dimensions des gouttes selon l'intensité
 	const dropDimensions = {
 		light: { width: 2, height: 12 },
 		moderate: { width: 3, height: 18 },
@@ -41,18 +40,22 @@ export function createRain(conditions: WorldConditions): Element[] {
 
 	const { width: dropWidth, height: dropHeight } = dropDimensions[weatherIntensity];
 
-	// Position Y de départ : sous les nuages
 	const startY = getCloudBottomY(conditions);
 	const rainZone = CANVAS_HEIGHT - startY;
 
-	// Génère les positions des gouttes
+	// 🆕 Calcule l'inclinaison de la pluie
+	const windOffset = calculateWindOffset(conditions.windSpeed, conditions.windDirection, 1);
+
 	for (let i = 0; i < dropCount; i++) {
 		const baseX = (i * CANVAS_WIDTH) / dropCount;
 		const offsetX = ((i * 17) % 20) - 10;
-		const x = baseX + offsetX;
-
-		// Position Y : de startY jusqu'en bas
 		const y = startY + ((i * 31) % rainZone);
+
+		// 🆕 Ajoute un décalage proportionnel à la hauteur de chute
+		const fallDistance = y - startY;
+		const windDrift = (windOffset * fallDistance) / rainZone;
+
+		const x = baseX + offsetX + windDrift;
 
 		elements.push(rectangle(x, y, dropWidth, dropHeight, color));
 	}

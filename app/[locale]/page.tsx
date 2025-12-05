@@ -1,5 +1,3 @@
-// app/[locale]/page.tsx
-
 import { useTranslations } from "next-intl";
 import ShiftScene from "@/components/ShiftScene";
 
@@ -16,6 +14,7 @@ export default function Home() {
 			},
 			location: tSim("location"),
 			myLocation: tSim("myLocation"),
+			cloudCover: tSim("cloudCover"), // 🆕
 			timeOfDay: {
 				label: tSim("timeOfDay.label"),
 				dawn: tSim("timeOfDay.dawn"),
@@ -42,6 +41,17 @@ export default function Home() {
 			},
 			temperature: {
 				label: tSim("temperature.label"),
+			},
+			wind: {
+				// 🆕 Toute la section
+				label: tSim("wind.label"),
+				speed: tSim("wind.speed"),
+				direction: tSim("wind.direction"),
+				directions: {
+					none: tSim("wind.directions.none"),
+					left: tSim("wind.directions.left"),
+					right: tSim("wind.directions.right"),
+				},
 			},
 		},
 	};

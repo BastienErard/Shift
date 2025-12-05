@@ -62,7 +62,7 @@ export interface WorldConditions {
 	/* Moment de la journée */
 	timeOfDay: TimeOfDay;
 
-	/*Saison actuelle */
+	/* Saison actuelle */
 	season: Season;
 
 	/* Type de météo */
@@ -78,7 +78,13 @@ export interface WorldConditions {
 	daysSinceCreation: number;
 
 	/* Couverture nuageuse en % (optionnel, pour mode LIVE) */
-	cloudCover?: number; // 🆕
+	cloudCover?: number;
+
+	/* Vitesse du vent en km/h (optionnel) */
+	windSpeed?: number; // 🆕
+
+	/* Direction du vent en degrés 0-360 (optionnel) */
+	windDirection?: number; // 🆕
 }
 
 // ============================================================================

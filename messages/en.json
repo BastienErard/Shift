@@ -29,13 +29,14 @@
 		"snowy": "Snowy"
 	},
 	"simulation": {
-		"title": "Settings",
+		"title": "Simulation",
 		"mode": {
 			"live": "Live",
 			"manual": "Manual"
 		},
 		"location": "Location",
 		"myLocation": "My location",
+		"cloudCover": "Cloud cover",
 		"timeOfDay": {
 			"label": "Time of day",
 			"dawn": "Dawn",
@@ -62,6 +63,16 @@
 		},
 		"temperature": {
 			"label": "Temperature"
+		},
+		"wind": {
+			"label": "Wind",
+			"speed": "Speed",
+			"direction": "Direction",
+			"directions": {
+				"none": "None",
+				"left": "Left",
+				"right": "Right"
+			}
 		}
 	},
 	"canvas": {

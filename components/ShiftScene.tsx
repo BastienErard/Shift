@@ -9,7 +9,7 @@ import { weatherToConditions } from "@/lib/utils/conditions";
 import { DEFAULT_LOCATION, createLocationFromCoords } from "@/lib/api/weather";
 import type { Location } from "@/lib/api/weather";
 import type { WorldConditions, TimeOfDay, Season, Weather } from "@/lib/canvas/conditions";
-
+import { getWindDirectionLabel } from "@/lib/canvas/utils/wind";
 interface ShiftSceneProps {
 	translations: {
 		simulation: {
@@ -20,6 +20,7 @@ interface ShiftSceneProps {
 			};
 			location: string;
 			myLocation: string;
+			cloudCover?: string; // 🆕 Optionnel
 			timeOfDay: {
 				label: string;
 				dawn: string;
@@ -47,6 +48,17 @@ interface ShiftSceneProps {
 			temperature: {
 				label: string;
 			};
+			wind?: {
+				// 🆕 Tout optionnel
+				label?: string;
+				speed?: string;
+				direction?: string;
+				directions?: {
+					none?: string;
+					left?: string;
+					right?: string;
+				};
+			};
 		};
 	};
 }
@@ -59,6 +71,8 @@ const DEFAULT_CONDITIONS: WorldConditions = {
 	temperature: 20,
 	daysSinceCreation: 0,
 	cloudCover: 50,
+	windSpeed: 15, // 🆕
+	windDirection: 270,
 };
 
 export default function ShiftScene({ translations }: ShiftSceneProps) {
@@ -198,7 +212,10 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 										)}
 										<div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
 											<span>💨</span>
-											<span>{weatherData.windSpeed}km/h</span>
+											<span>
+												{weatherData.windSpeed}km/h{" "}
+												{getWindDirectionLabel(weatherData.windDirection)}
+											</span>
 										</div>
 									</>
 								)}
@@ -276,11 +293,11 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 							</div>
 						</div>
 
-						{/* 🆕 Slider Couverture nuageuse (pleine largeur) */}
+						{/* Slider Couverture nuageuse */}
 						<div>
 							<div className="flex justify-between items-center mb-1">
 								<label className="text-xs font-medium text-gray-500 dark:text-gray-400">
-									☁️ Couverture nuageuse
+									☁️ {t.cloudCover || "Couverture nuageuse"}
 								</label>
 								<span className="text-xs font-semibold text-sky-600 dark:text-sky-400">
 									{manualConditions.cloudCover ?? 50}%
@@ -294,6 +311,50 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 								onChange={(e) => updateManualCondition("cloudCover", parseInt(e.target.value, 10))}
 								className="w-full h-2 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sky-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-sky-500 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
 							/>
+						</div>
+
+						{/* Section Vent */}
+						<div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+							<label className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+								💨 {t.wind?.label || "Vent"}
+							</label>
+
+							{/* Grille 2 colonnes : Vitesse + Direction */}
+							<div className="grid grid-cols-2 gap-3">
+								{/* Slider Vitesse du vent */}
+								<div>
+									<div className="flex justify-between items-center mb-1">
+										<label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+											{t.wind?.speed || "Vitesse"}
+										</label>
+										<span className="text-xs font-semibold text-sky-600 dark:text-sky-400">
+											{manualConditions.windSpeed ?? 15}km/h
+										</span>
+									</div>
+									<input
+										type="range"
+										min={0}
+										max={50}
+										value={manualConditions.windSpeed ?? 15}
+										onChange={(e) =>
+											updateManualCondition("windSpeed", parseInt(e.target.value, 10))
+										}
+										className="w-full h-2 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sky-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-sky-500 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
+									/>
+								</div>
+
+								{/* Select Direction */}
+								<ControlSelect
+									label={t.wind?.direction || "Direction"}
+									value={(manualConditions.windDirection ?? 270).toString()}
+									onChange={(value) => updateManualCondition("windDirection", parseInt(value, 10))}
+									options={[
+										{ value: "0", label: `↕️ ${t.wind?.directions?.none || "Aucun"}` },
+										{ value: "90", label: `← ${t.wind?.directions?.left || "Gauche"}` },
+										{ value: "270", label: `→ ${t.wind?.directions?.right || "Droite"}` },
+									]}
+								/>
+							</div>
 						</div>
 					</div>
 				)}

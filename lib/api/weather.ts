@@ -30,6 +30,7 @@ export interface WeatherData {
 	temperature: number;
 	weatherCode: number;
 	windSpeed: number;
+	windDirection: number;
 	isDay: boolean;
 	time: Date;
 	sunrise?: Date;
@@ -103,6 +104,7 @@ export async function fetchWeather(location: Location): Promise<WeatherData> {
 		temperature: Math.round(data.current_weather.temperature),
 		weatherCode: data.current_weather.weathercode,
 		windSpeed: data.current_weather.windspeed,
+		windDirection: data.current_weather.winddirection,
 		isDay: data.current_weather.is_day === 1,
 		time: new Date(data.current_weather.time),
 		sunrise: data.daily?.sunrise?.[0] ? new Date(data.daily.sunrise[0]) : undefined,

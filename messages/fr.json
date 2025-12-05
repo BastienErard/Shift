@@ -29,13 +29,14 @@
 		"snowy": "Neigeux"
 	},
 	"simulation": {
-		"title": "Paramètres",
+		"title": "Simulation",
 		"mode": {
 			"live": "Live",
 			"manual": "Manuel"
 		},
-		"location": "Lieu",
+		"location": "Localisation",
 		"myLocation": "Ma position",
+		"cloudCover": "Couverture nuageuse",
 		"timeOfDay": {
 			"label": "Moment du jour",
 			"dawn": "Aube",
@@ -62,6 +63,16 @@
 		},
 		"temperature": {
 			"label": "Température"
+		},
+		"wind": {
+			"label": "Vent",
+			"speed": "Vitesse",
+			"direction": "Direction",
+			"directions": {
+				"none": "Aucun",
+				"left": "Gauche",
+				"right": "Droite"
+			}
 		}
 	},
 	"canvas": {

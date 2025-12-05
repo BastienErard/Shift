@@ -3,6 +3,7 @@ import type { WorldConditions } from "../conditions";
 import { rectangle } from "../types";
 import { getHouseColors } from "../palette";
 import { CANVAS_WIDTH, HORIZON_Y } from "../types";
+import { calculateWindOffset } from "../utils/wind";
 
 /* Crée les éléments de la maison */
 export function createHouse(conditions: WorldConditions): Element[] {
@@ -149,42 +150,63 @@ export function createHouse(conditions: WorldConditions): Element[] {
 }
 
 /* Crée la fumée de la cheminée */
-export function createChimneySmoke(conditions: WorldConditions): Element[] {
-	// Pas de fumée si température >= 15°C
+export function createChimneySmoke(conditions: WorldConditions, offset: number = 0): Element[] {
 	if (conditions.temperature >= 15) {
 		return [];
 	}
 
 	const elements: Element[] = [];
 
-	/* Position de base (au-dessus de la cheminée */
 	const baseX = Math.floor(CANVAS_WIDTH * 0.4);
-	const chimneyX = baseX + 120 - 35 + 5; // Centre de la cheminée
-	const chimneyTopY = HORIZON_Y + 60 - 25 - 15 - 20 - 35; // Haut de la cheminée
+	const chimneyX = baseX + 120 - 35 + 5;
+	const chimneyTopY = HORIZON_Y + 60 - 25 - 15 - 20 - 35;
 
-	/* Couleur de la fumée */
 	const smokeOpacity = conditions.temperature < 5 ? 180 : 140;
 	const smokeColor = { r: smokeOpacity, g: smokeOpacity, b: smokeOpacity };
 
-	/* Particules de fumée (rectangles qui montent) */
-	const particlePositions = [
-		{ x: 0, y: -10, size: 8 },
-		{ x: 3, y: -22, size: 10 },
-		{ x: -2, y: -36, size: 12 },
-		{ x: 4, y: -52, size: 10 },
-		{ x: -1, y: -68, size: 8 },
+	const baseParticles = [
+		{ x: 0, baseY: -10, size: 8 },
+		{ x: 3, baseY: -22, size: 10 },
+		{ x: -2, baseY: -36, size: 12 },
+		{ x: 4, baseY: -52, size: 10 },
+		{ x: -1, baseY: -68, size: 8 },
 	];
 
-	for (const particle of particlePositions) {
-		elements.push(
-			rectangle(
-				chimneyX + particle.x,
-				chimneyTopY + particle.y,
-				particle.size,
-				particle.size,
-				smokeColor
-			)
+	for (let i = 0; i < baseParticles.length; i++) {
+		const particle = baseParticles[i];
+
+		const animatedY = particle.baseY - offset;
+		const cycleY = animatedY < -100 ? animatedY + 100 : animatedY;
+
+		const distanceFromTop = Math.abs(cycleY);
+		const opacity = Math.max(0, Math.min(1, 1 - distanceFromTop / 80));
+
+		// 🆕 Calcule le décalage horizontal causé par le vent
+		// Plus la fumée est haute, plus elle est affectée
+		const heightFactor = distanceFromTop / 20;
+		const windOffset = calculateWindOffset(
+			conditions.windSpeed,
+			conditions.windDirection,
+			heightFactor
 		);
+
+		const particleColor = {
+			r: Math.round(smokeColor.r * opacity + 255 * (1 - opacity)),
+			g: Math.round(smokeColor.g * opacity + 255 * (1 - opacity)),
+			b: Math.round(smokeColor.b * opacity + 255 * (1 - opacity)),
+		};
+
+		if (opacity > 0.1) {
+			elements.push(
+				rectangle(
+					chimneyX + particle.x + windOffset, // 🆕 Ajoute l'offset du vent
+					chimneyTopY + cycleY,
+					particle.size,
+					particle.size,
+					particleColor
+				)
+			);
+		}
 	}
 
 	return elements;
