@@ -2,6 +2,7 @@ export {
 	fetchWeather,
 	weatherCodeToWeather,
 	weatherCodeToIntensity,
+	precipitationToIntensity,
 	createLocationFromCoords,
 	LOCATIONS,
 	DEFAULT_LOCATION,

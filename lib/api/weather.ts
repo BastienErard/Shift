@@ -19,6 +19,10 @@ export interface OpenMeteoResponse {
 		sunrise: string[];
 		sunset: string[];
 	};
+	current?: {
+		precipitation?: number;
+		cloudcover?: number;
+	};
 }
 
 /** Données météo transformées pour Shift */
@@ -30,6 +34,8 @@ export interface WeatherData {
 	time: Date;
 	sunrise?: Date;
 	sunset?: Date;
+	cloudCover: number; // 0-100%
+	precipitation: number; // mm
 }
 
 /** Coordonnées d'un lieu */
@@ -81,6 +87,8 @@ export async function fetchWeather(location: Location): Promise<WeatherData> {
 	url.searchParams.set("current_weather", "true");
 	url.searchParams.set("daily", "sunrise,sunset");
 	url.searchParams.set("timezone", "auto");
+	url.searchParams.set("current", "precipitation,cloudcover");
+	url.searchParams.set("hourly", "precipitation");
 
 	const response = await fetch(url.toString());
 
@@ -99,6 +107,8 @@ export async function fetchWeather(location: Location): Promise<WeatherData> {
 		time: new Date(data.current_weather.time),
 		sunrise: data.daily?.sunrise?.[0] ? new Date(data.daily.sunrise[0]) : undefined,
 		sunset: data.daily?.sunset?.[0] ? new Date(data.daily.sunset[0]) : undefined,
+		cloudCover: data.current?.cloudcover ?? 50,
+		precipitation: data.current?.precipitation ?? 0,
 	};
 }
 
@@ -160,4 +170,11 @@ export function createLocationFromCoords(
 		latitude,
 		longitude,
 	};
+}
+
+/* Détermine l'intensité météo basée sur les précipitations */
+export function precipitationToIntensity(precipitation: number): "light" | "moderate" | "heavy" {
+	if (precipitation < 2) return "light";
+	if (precipitation < 10) return "moderate";
+	return "heavy";
 }

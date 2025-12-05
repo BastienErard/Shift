@@ -21,6 +21,7 @@ export {
 	createCloud,
 	createClouds,
 	createSkyElements,
+	getCloudBottomY,
 } from "./sky";
 
 // ============================================================================

@@ -42,7 +42,8 @@ export default function PixelCanvas({
 			let scene: Scene;
 
 			if (mode === "simulation" && conditions) {
-				scene = buildScene(conditions);
+				// Passe cloudCover si disponible
+				scene = buildScene(conditions, conditions.cloudCover);
 			} else if (mode === "test") {
 				scene = buildTestScene(testPreset);
 			} else {

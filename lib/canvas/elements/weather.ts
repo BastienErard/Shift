@@ -1,15 +1,21 @@
+// lib/canvas/elements/weather.ts
+
 import type { Element } from "../types";
 import type { WorldConditions } from "../conditions";
 import { rectangle } from "../types";
 import { getPrecipitationColor } from "../palette";
-import { CANVAS_WIDTH, CANVAS_HEIGHT, HORIZON_Y } from "../types";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../types";
 import { hasPrecipitation } from "../conditions";
+import { getCloudBottomY } from "./sky";
 
-/* Crée les gouttes de pluie */
+/**
+ * Crée les gouttes de pluie
+ *
+ * 🎓 Les gouttes partent du bas des nuages
+ */
 export function createRain(conditions: WorldConditions): Element[] {
 	const { weather, weatherIntensity } = conditions;
 
-	// Pluie uniquement si weather = rain ou storm
 	if (weather !== "rain" && weather !== "storm") {
 		return [];
 	}
@@ -17,7 +23,7 @@ export function createRain(conditions: WorldConditions): Element[] {
 	const elements: Element[] = [];
 	const color = getPrecipitationColor(conditions);
 
-	/* Nombre de gouttes selon l'intensité */
+	// Nombre de gouttes selon l'intensité
 	const dropCounts = {
 		light: 25,
 		moderate: 50,
@@ -26,24 +32,27 @@ export function createRain(conditions: WorldConditions): Element[] {
 
 	const dropCount = dropCounts[weatherIntensity];
 
-	/* Dimensions des gouttes selon l'intensité */
+	// Dimensions des gouttes selon l'intensité
 	const dropDimensions = {
-		light: { width: 1, height: 10 },
-		moderate: { width: 2, height: 15 },
-		heavy: { width: 2, height: 20 },
+		light: { width: 2, height: 12 },
+		moderate: { width: 3, height: 18 },
+		heavy: { width: 3, height: 25 },
 	};
 
 	const { width: dropWidth, height: dropHeight } = dropDimensions[weatherIntensity];
 
-	/* Génère les positions des gouttes */
+	// Position Y de départ : sous les nuages
+	const startY = getCloudBottomY(conditions);
+	const rainZone = CANVAS_HEIGHT - startY;
+
+	// Génère les positions des gouttes
 	for (let i = 0; i < dropCount; i++) {
-		// Position X : répartition régulière avec légère variation
 		const baseX = (i * CANVAS_WIDTH) / dropCount;
-		const offsetX = ((i * 17) % 20) - 10; // Variation -10 à +10 pixels
+		const offsetX = ((i * 17) % 20) - 10;
 		const x = baseX + offsetX;
 
-		// Position Y : variation basée sur l'index pour effet de profondeur
-		const y = (i * 31) % (HORIZON_Y + 50);
+		// Position Y : de startY jusqu'en bas
+		const y = startY + ((i * 31) % rainZone);
 
 		elements.push(rectangle(x, y, dropWidth, dropHeight, color));
 	}
@@ -51,11 +60,14 @@ export function createRain(conditions: WorldConditions): Element[] {
 	return elements;
 }
 
-/* Crée les flocons de neige */
+/**
+ * Crée les flocons de neige
+ *
+ * 🎓 Les flocons partent du bas des nuages
+ */
 export function createSnow(conditions: WorldConditions): Element[] {
 	const { weather, weatherIntensity } = conditions;
 
-	// Neige uniquement si weather = snow
 	if (weather !== "snow") {
 		return [];
 	}
@@ -63,53 +75,67 @@ export function createSnow(conditions: WorldConditions): Element[] {
 	const elements: Element[] = [];
 	const color = getPrecipitationColor(conditions);
 
-	/* Nombre de flocons selon l'intensité */
+	// Nombre de flocons selon l'intensité
 	const flakeCounts = {
-		light: 20,
-		moderate: 40,
-		heavy: 70,
+		light: 25,
+		moderate: 45,
+		heavy: 75,
 	};
 
 	const flakeCount = flakeCounts[weatherIntensity];
 
-	/* Génère les flocons */
+	// Position Y de départ : sous les nuages
+	const startY = getCloudBottomY(conditions);
+	const snowZone = CANVAS_HEIGHT - startY;
+
+	// Génère les flocons
 	for (let i = 0; i < flakeCount; i++) {
-		// Position X : répartition avec variation
 		const baseX = (i * CANVAS_WIDTH) / flakeCount;
 		const offsetX = ((i * 23) % 30) - 15;
 		const x = baseX + offsetX;
 
-		// Position Y : variation
-		const y = (i * 37) % (HORIZON_Y + 80);
+		// Position Y : de startY jusqu'en bas
+		const y = startY + ((i * 37) % snowZone);
 
-		// Taille : varie entre 2 et 5 pixels selon l'index
-		const size = 2 + ((i * 13) % 4);
+		// Taille : varie entre 3 et 7 pixels
+		const size = 3 + ((i * 13) % 5);
 
+		// Flocon principal
 		elements.push(rectangle(x, y, size, size, color));
+
+		// Contour pour gros flocons
+		if (size >= 5) {
+			const outlineColor = { r: 200, g: 210, b: 220 };
+			elements.push(rectangle(x - 1, y - 1, size + 2, size + 2, outlineColor));
+			elements.push(rectangle(x, y, size, size, color));
+		}
 	}
 
 	return elements;
 }
 
-/* Crée un éclair */
+/**
+ * Crée un éclair
+ *
+ * 🎓 L'éclair part du bas des nuages
+ */
 export function createLightning(conditions: WorldConditions): Element[] {
-	const { weather, weatherIntensity } = conditions;
+	const { weather } = conditions;
 
-	// Éclair uniquement si orage violent
-	if (weather !== "storm" || weatherIntensity !== "heavy") {
+	if (weather !== "storm") {
 		return [];
 	}
 
 	const elements: Element[] = [];
 
-	/* Couleur de l'éclair : jaune/blanc brillant */
+	// Couleur de l'éclair
 	const lightningColor = { r: 255, g: 255, b: 200 };
 
-	/* Position de base de l'éclair */
+	// Position de base : sous les nuages
 	const startX = CANVAS_WIDTH * 0.6;
-	const startY = 30;
+	const startY = getCloudBottomY(conditions);
 
-	/* Forme de l'éclair en zigzag */
+	// Forme de l'éclair en zigzag
 	const segments = [
 		{ x: 0, y: 0, width: 8, height: 25 },
 		{ x: -15, y: 25, width: 20, height: 8 },
@@ -120,6 +146,11 @@ export function createLightning(conditions: WorldConditions): Element[] {
 		{ x: -40, y: 112, width: 5, height: 25 },
 	];
 
+	// Lueur derrière l'éclair
+	const glowColor = { r: 200, g: 200, b: 255 };
+	elements.push(rectangle(startX - 5, startY - 5, 18, 35, glowColor));
+
+	// Segments de l'éclair
 	for (const segment of segments) {
 		elements.push(
 			rectangle(
@@ -132,43 +163,37 @@ export function createLightning(conditions: WorldConditions): Element[] {
 		);
 	}
 
-	/* Lueur autour de l'éclair */
-	const glowColor = { r: 200, g: 200, b: 255 };
-
-	// Lueur derrière le segment principal
-	elements.unshift(rectangle(startX - 5, startY - 5, 18, 35, glowColor));
-
 	return elements;
 }
 
-/* Crée tous les effets météorologiques */
+/**
+ * Crée tous les effets météorologiques
+ */
 export function createWeatherEffects(conditions: WorldConditions): Element[] {
-	// Pas de précipitations = pas d'effets
 	if (!hasPrecipitation(conditions)) {
 		return [];
 	}
 
 	const elements: Element[] = [];
 
-	// Ajoute les précipitations appropriées
 	elements.push(...createRain(conditions));
 	elements.push(...createSnow(conditions));
-
-	// Ajoute l'éclair si orage violent
 	elements.push(...createLightning(conditions));
 
 	return elements;
 }
 
-/* Crée du brouillard */
+/**
+ * Crée du brouillard
+ */
 export function createFog(conditions: WorldConditions, intensity: number = 0.5): Element[] {
 	const elements: Element[] = [];
 
-	/* Couleur du brouillard */
-	const fogBase = Math.floor(200 + (1 - intensity) * 55); // 200-255
+	const fogBase = Math.floor(200 + (1 - intensity) * 55);
 	const fogColor = { r: fogBase, g: fogBase, b: fogBase + 10 };
 
-	/* Couches de brouillard */
+	const HORIZON_Y = CANVAS_HEIGHT * 0.4;
+
 	const layers = [
 		{ y: HORIZON_Y - 30, height: 40, opacity: 0.3 },
 		{ y: HORIZON_Y + 10, height: 50, opacity: 0.5 },
@@ -176,7 +201,6 @@ export function createFog(conditions: WorldConditions, intensity: number = 0.5):
 	];
 
 	for (const layer of layers) {
-		// Ajuste la couleur selon l'opacité de la couche
 		const layerBrightness = Math.floor(fogBase * (1 - layer.opacity * intensity * 0.3));
 		const layerColor = { r: layerBrightness, g: layerBrightness, b: layerBrightness + 5 };
 

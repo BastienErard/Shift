@@ -58,6 +58,7 @@ const DEFAULT_CONDITIONS: WorldConditions = {
 	weatherIntensity: "moderate",
 	temperature: 20,
 	daysSinceCreation: 0,
+	cloudCover: 50,
 };
 
 export default function ShiftScene({ translations }: ShiftSceneProps) {
@@ -159,7 +160,6 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 						⚙️ {t.mode.manual}
 					</button>
 				</div>
-
 				{/* Mode LIVE : Infos en temps réel */}
 				{mode === "live" && (
 					<div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
@@ -181,77 +181,117 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 									<span>{formattedTime}</span>
 								</div>
 								{weatherData && (
-									<div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-										<span>🌡️</span>
-										<span>{weatherData.temperature}°C</span>
-									</div>
+									<>
+										<div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+											<span>🌡️</span>
+											<span>{weatherData.temperature}°C</span>
+										</div>
+										<div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+											<span>☁️</span>
+											<span>{weatherData.cloudCover}%</span>
+										</div>
+										{weatherData.precipitation > 0 && (
+											<div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+												<span>🌧️</span>
+												<span>{weatherData.precipitation}mm</span>
+											</div>
+										)}
+										<div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+											<span>💨</span>
+											<span>{weatherData.windSpeed}km/h</span>
+										</div>
+									</>
 								)}
 							</div>
 						)}
 					</div>
 				)}
-
 				{/* Mode MANUEL : Contrôles */}
 				{mode === "manual" && (
-					<div className="grid grid-cols-2 gap-3">
-						{/* Moment du jour */}
-						<ControlSelect
-							label={t.timeOfDay.label}
-							value={manualConditions.timeOfDay}
-							onChange={(value) => updateManualCondition("timeOfDay", value as TimeOfDay)}
-							options={[
-								{ value: "dawn", label: t.timeOfDay.dawn },
-								{ value: "morning", label: t.timeOfDay.morning },
-								{ value: "noon", label: t.timeOfDay.noon },
-								{ value: "afternoon", label: t.timeOfDay.afternoon },
-								{ value: "dusk", label: t.timeOfDay.dusk },
-								{ value: "night", label: t.timeOfDay.night },
-							]}
-						/>
+					<div className="space-y-3">
+						{/* Grille 2x2 pour les 4 premiers contrôles */}
+						<div className="grid grid-cols-2 gap-3">
+							{/* Moment du jour */}
+							<ControlSelect
+								label={t.timeOfDay.label}
+								value={manualConditions.timeOfDay}
+								onChange={(value) => updateManualCondition("timeOfDay", value as TimeOfDay)}
+								options={[
+									{ value: "dawn", label: t.timeOfDay.dawn },
+									{ value: "morning", label: t.timeOfDay.morning },
+									{ value: "noon", label: t.timeOfDay.noon },
+									{ value: "afternoon", label: t.timeOfDay.afternoon },
+									{ value: "dusk", label: t.timeOfDay.dusk },
+									{ value: "night", label: t.timeOfDay.night },
+								]}
+							/>
 
-						{/* Saison */}
-						<ControlSelect
-							label={t.season.label}
-							value={manualConditions.season}
-							onChange={(value) => updateManualCondition("season", value as Season)}
-							options={[
-								{ value: "spring", label: t.season.spring },
-								{ value: "summer", label: t.season.summer },
-								{ value: "autumn", label: t.season.autumn },
-								{ value: "winter", label: t.season.winter },
-							]}
-						/>
+							{/* Saison */}
+							<ControlSelect
+								label={t.season.label}
+								value={manualConditions.season}
+								onChange={(value) => updateManualCondition("season", value as Season)}
+								options={[
+									{ value: "spring", label: t.season.spring },
+									{ value: "summer", label: t.season.summer },
+									{ value: "autumn", label: t.season.autumn },
+									{ value: "winter", label: t.season.winter },
+								]}
+							/>
 
-						{/* Météo */}
-						<ControlSelect
-							label={t.weather.label}
-							value={manualConditions.weather}
-							onChange={(value) => updateManualCondition("weather", value as Weather)}
-							options={[
-								{ value: "clear", label: t.weather.clear },
-								{ value: "cloudy", label: t.weather.cloudy },
-								{ value: "rain", label: t.weather.rain },
-								{ value: "snow", label: t.weather.snow },
-								{ value: "storm", label: t.weather.storm },
-							]}
-						/>
+							{/* Météo */}
+							<ControlSelect
+								label={t.weather.label}
+								value={manualConditions.weather}
+								onChange={(value) => updateManualCondition("weather", value as Weather)}
+								options={[
+									{ value: "clear", label: t.weather.clear },
+									{ value: "cloudy", label: t.weather.cloudy },
+									{ value: "rain", label: t.weather.rain },
+									{ value: "snow", label: t.weather.snow },
+									{ value: "storm", label: t.weather.storm },
+								]}
+							/>
 
-						{/* Température */}
+							{/* Température */}
+							<div>
+								<div className="flex justify-between items-center mb-1">
+									<label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+										{t.temperature.label}
+									</label>
+									<span className="text-xs font-semibold text-sky-600 dark:text-sky-400">
+										{manualConditions.temperature}°C
+									</span>
+								</div>
+								<input
+									type="range"
+									min={-20}
+									max={40}
+									value={manualConditions.temperature}
+									onChange={(e) =>
+										updateManualCondition("temperature", parseInt(e.target.value, 10))
+									}
+									className="w-full h-2 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sky-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-sky-500 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
+								/>
+							</div>
+						</div>
+
+						{/* 🆕 Slider Couverture nuageuse (pleine largeur) */}
 						<div>
 							<div className="flex justify-between items-center mb-1">
 								<label className="text-xs font-medium text-gray-500 dark:text-gray-400">
-									{t.temperature.label}
+									☁️ Couverture nuageuse
 								</label>
 								<span className="text-xs font-semibold text-sky-600 dark:text-sky-400">
-									{manualConditions.temperature}°C
+									{manualConditions.cloudCover ?? 50}%
 								</span>
 							</div>
 							<input
 								type="range"
-								min={-20}
-								max={40}
-								value={manualConditions.temperature}
-								onChange={(e) => updateManualCondition("temperature", parseInt(e.target.value, 10))}
+								min={0}
+								max={100}
+								value={manualConditions.cloudCover ?? 50}
+								onChange={(e) => updateManualCondition("cloudCover", parseInt(e.target.value, 10))}
 								className="w-full h-2 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sky-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-sky-500 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
 							/>
 						</div>

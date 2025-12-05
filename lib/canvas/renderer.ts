@@ -1,19 +1,45 @@
 import type { Scene, Element, Color } from "./types";
-import { colorToString, PIXEL_RATIO, DISPLAY_WIDTH, DISPLAY_HEIGHT } from "./types";
+import { colorToString } from "./types";
 
-/* Renderer Canvas pour Shift */
+/**
+ * Renderer Canvas pour Shift
+ *
+ * 🎓 Ordre de rendu :
+ * 1. Ciel (fond)
+ * 2. Éléments célestes (soleil, lune, étoiles, nuages)
+ * 3. Sol (masque la partie basse du soleil à l'aube/crépuscule)
+ * 4. Éléments terrestres (arbre, maison, météo)
+ */
+
+// Étend le type Element avec un z-index optionnel
+type ElementWithZIndex = Element & { zIndex?: "sky" | "ground" };
+
 export function renderScene(ctx: CanvasRenderingContext2D, scene: Scene): void {
 	ctx.save();
 
 	// Efface le canvas
 	clearCanvas(ctx, scene);
 
-	// Dessine le fond (ciel + sol)
-	drawBackground(ctx, scene);
+	// Dessine le ciel uniquement
+	drawSky(ctx, scene);
 
-	// Dessine tous les éléments
+	// Dessine les éléments célestes (z-index = "sky")
 	for (const element of scene.elements) {
-		drawElement(ctx, element);
+		const el = element as ElementWithZIndex;
+		if (el.zIndex === "sky") {
+			drawElement(ctx, element);
+		}
+	}
+
+	// Dessine le sol (masque la partie basse du soleil)
+	drawGround(ctx, scene);
+
+	// Dessine les éléments terrestres (pas de z-index ou z-index = "ground")
+	for (const element of scene.elements) {
+		const el = element as ElementWithZIndex;
+		if (!el.zIndex || el.zIndex === "ground") {
+			drawElement(ctx, element);
+		}
 	}
 
 	ctx.restore();
@@ -24,13 +50,18 @@ function clearCanvas(ctx: CanvasRenderingContext2D, scene: Scene): void {
 	ctx.clearRect(0, 0, scene.dimensions.width, scene.dimensions.height);
 }
 
-/* Dessine le fond (ciel + sol) */
-function drawBackground(ctx: CanvasRenderingContext2D, scene: Scene): void {
+/* Dessine le ciel (sans le sol) */
+function drawSky(ctx: CanvasRenderingContext2D, scene: Scene): void {
 	const { width, height } = scene.dimensions;
 
 	// Ciel (toute la surface)
 	ctx.fillStyle = colorToString(scene.skyColor);
 	ctx.fillRect(0, 0, width, height);
+}
+
+/* Dessine le sol */
+function drawGround(ctx: CanvasRenderingContext2D, scene: Scene): void {
+	const { width, height } = scene.dimensions;
 
 	// Sol (40% inférieur)
 	const horizonY = height * 0.4;

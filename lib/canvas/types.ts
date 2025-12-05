@@ -43,6 +43,13 @@ export interface Size {
 // TYPES DE FORMES
 // ============================================================================
 
+/**
+ * Z-index pour l'ordre de rendu
+ * - "sky" : Éléments célestes (dessinés avant le sol)
+ * - "ground" : Éléments terrestres (dessinés après le sol)
+ */
+export type ZIndex = "sky" | "ground";
+
 /* Rectangle */
 export interface RectangleShape {
 	type: "rectangle";
@@ -51,6 +58,7 @@ export interface RectangleShape {
 	width: number;
 	height: number;
 	color: Color;
+	zIndex?: ZIndex;
 }
 
 /* Cercle */
@@ -60,6 +68,7 @@ export interface CircleShape {
 	y: number;
 	radius: number;
 	color: Color;
+	zIndex?: ZIndex;
 }
 
 /* Grille de pixels */
@@ -70,6 +79,7 @@ export interface PixelGridShape {
 	pixelSize: number;
 	pixels: boolean[][];
 	color: Color;
+	zIndex?: ZIndex;
 }
 
 /* Union de toutes les formes possibles */
@@ -107,14 +117,21 @@ export function rectangle(
 	y: number,
 	width: number,
 	height: number,
-	color: Color
+	color: Color,
+	zIndex?: ZIndex
 ): RectangleShape {
-	return { type: "rectangle", x, y, width, height, color };
+	return { type: "rectangle", x, y, width, height, color, zIndex };
 }
 
 /* Crée un cercle */
-export function circle(x: number, y: number, radius: number, color: Color): CircleShape {
-	return { type: "circle", x, y, radius, color };
+export function circle(
+	x: number,
+	y: number,
+	radius: number,
+	color: Color,
+	zIndex?: ZIndex
+): CircleShape {
+	return { type: "circle", x, y, radius, color, zIndex };
 }
 
 /* Crée une grille de pixels */
@@ -123,9 +140,10 @@ export function pixelGrid(
 	y: number,
 	pixelSize: number,
 	pixels: boolean[][],
-	color: Color
+	color: Color,
+	zIndex?: ZIndex
 ): PixelGridShape {
-	return { type: "pixelGrid", x, y, pixelSize, pixels, color };
+	return { type: "pixelGrid", x, y, pixelSize, pixels, color, zIndex };
 }
 
 /**

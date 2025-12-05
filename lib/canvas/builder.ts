@@ -11,7 +11,7 @@ import {
 } from "./elements";
 
 /* Construit une scène complète selon les conditions actuelles */
-export function buildScene(conditions: WorldConditions): Scene {
+export function buildScene(conditions: WorldConditions, cloudCover?: number): Scene {
 	/* Couleurs de base de la scène */
 	const skyColor = getSkyColor(conditions);
 	const groundColor = getGroundColor(conditions);
@@ -23,7 +23,7 @@ export function buildScene(conditions: WorldConditions): Scene {
 		// ============================================
 
 		/* Éléments célestes (soleil/lune/étoiles/nuages) */
-		...createSkyElements(conditions),
+		...createSkyElements(conditions, cloudCover),
 
 		// ============================================
 		// MILIEU : Éléments au sol
@@ -50,7 +50,7 @@ export function buildScene(conditions: WorldConditions): Scene {
 		...createWeatherEffects(conditions),
 	];
 
-	/* Retourne la Scene complèt */
+	/* Retourne la Scene complète */
 	return {
 		dimensions: {
 			width: CANVAS_WIDTH,

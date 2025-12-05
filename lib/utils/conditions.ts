@@ -19,12 +19,19 @@ export function weatherToConditions(
 	timeOfDay: TimeOfDay,
 	daysSinceCreation: number = 0
 ): WorldConditions {
+	const { weatherCodeToWeather, precipitationToIntensity } = require("@/lib/api/weather");
+
+	// Détermine l'intensité : utilise les précipitations si disponibles
+	const intensity =
+		weather.precipitation > 0 ? precipitationToIntensity(weather.precipitation) : "moderate";
+
 	return {
 		timeOfDay,
 		season: getSeason(weather.time),
 		weather: weatherCodeToWeather(weather.weatherCode),
-		weatherIntensity: weatherCodeToIntensity(weather.weatherCode),
+		weatherIntensity: intensity,
 		temperature: weather.temperature,
 		daysSinceCreation,
+		cloudCover: weather.cloudCover, // 🆕 Ajoute la couverture nuageuse
 	};
 }

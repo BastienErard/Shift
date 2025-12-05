@@ -76,6 +76,9 @@ export interface WorldConditions {
 
 	/* Nombre de jours depuis la création du monde */
 	daysSinceCreation: number;
+
+	/* Couverture nuageuse en % (optionnel, pour mode LIVE) */
+	cloudCover?: number; // 🆕
 }
 
 // ============================================================================
