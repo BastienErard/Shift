@@ -19,10 +19,10 @@ export function weatherToConditions(
 	timeOfDay: TimeOfDay,
 	daysSinceCreation: number = 0
 ): WorldConditions {
-	const { weatherCodeToWeather, precipitationToIntensity } = require("@/lib/api/weather");
+	const { weatherCodeToWeather, getWeatherIntensity } = require("@/lib/api/weather");
 
-	const intensity =
-		weather.precipitation > 0 ? precipitationToIntensity(weather.precipitation) : "moderate";
+	// 🆕 Utilise la nouvelle fonction
+	const intensity = getWeatherIntensity(weather.precipitation, weather.weatherCode);
 
 	return {
 		timeOfDay,

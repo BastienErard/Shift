@@ -40,35 +40,29 @@ export default function PixelCanvas({
 			return;
 		}
 
-		/**
-		 * Fonction d'animation appelée 60 fois par seconde
-		 */
 		const animate = () => {
 			try {
 				let scene: Scene;
 
 				if (mode === "simulation" && conditions) {
-					scene = buildScene(conditions, conditions.cloudCover, smokeOffsetRef.current);
+					scene = buildScene(
+						conditions,
+						conditions.cloudCover,
+						smokeOffsetRef.current,
+						smokeOffsetRef.current // Même offset pour météo
+					);
 				} else if (mode === "test") {
 					scene = buildTestScene(testPreset);
 				} else {
 					scene = buildTestScene("sunny");
 				}
 
-				// Dessine la scène
 				renderScene(ctx, scene);
 
-				// Met à jour l'offset de la fumée (monte de 0.5px par frame)
+				// 🆕 Incrémente SANS LIMITE (pas de reset)
 				smokeOffsetRef.current += 0.5;
 
-				// Reset après 100px (cycle)
-				if (smokeOffsetRef.current > 100) {
-					smokeOffsetRef.current = 0;
-				}
-
 				setError(null);
-
-				// Demande la prochaine frame
 				animationFrameRef.current = requestAnimationFrame(animate);
 			} catch (err) {
 				console.error("Erreur de rendu:", err);
@@ -76,10 +70,8 @@ export default function PixelCanvas({
 			}
 		};
 
-		// Lance l'animation
 		animate();
 
-		// Cleanup : arrête l'animation quand le composant se démonte
 		return () => {
 			if (animationFrameRef.current) {
 				cancelAnimationFrame(animationFrameRef.current);

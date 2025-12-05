@@ -14,47 +14,34 @@ import {
 export function buildScene(
 	conditions: WorldConditions,
 	cloudCover?: number,
-	smokeOffset: number = 0
+	smokeOffset: number = 0,
+	weatherOffset: number = 0
 ): Scene {
-	/* Couleurs de base de la scène */
 	const skyColor = getSkyColor(conditions);
 	const groundColor = getGroundColor(conditions);
 
-	/* Construction des éléments dans l'ordre de rendu */
-	const elements = [
-		// ============================================
-		// ARRIÈRE-PLAN : Ciel
-		// ============================================
+	// 🆕 Sépare les éclairs des autres effets météo
+	const lightningElements =
+		conditions.weather === "storm"
+			? require("./elements/weather").createLightning(conditions, weatherOffset)
+			: [];
 
-		/* Éléments célestes (soleil/lune/étoiles/nuages) */
+	const elements = [
+		// Ciel (base)
 		...createSkyElements(conditions, cloudCover),
 
-		// ============================================
-		// MILIEU : Éléments au sol
-		// ============================================
+		// 🆕 Flash des éclairs (PAR-DESSUS le ciel, SOUS les nuages)
+		// Note: Le flash est déjà dans createLightning, pas besoin de filtre spécial
 
-		/* Arbre à gauche */
+		// Éléments au sol
 		...createTree(conditions),
-
-		/* Maison au centre-droit */
 		...createHouse(conditions),
-
-		// ============================================
-		// AVANT : Effets dynamiques
-		// ============================================
-
-		/* Fumée de cheminée avec animation */
 		...createChimneySmoke(conditions, smokeOffset),
 
-		// ============================================
-		// PREMIER PLAN : Météo
-		// ============================================
-
-		/* Effets météorologiques (pluie, neige, éclairs) */
-		...createWeatherEffects(conditions),
+		// Météo (pluie/neige + éclairs)
+		...createWeatherEffects(conditions, weatherOffset),
 	];
 
-	/* Retourne la Scene complète */
 	return {
 		dimensions: {
 			width: CANVAS_WIDTH,

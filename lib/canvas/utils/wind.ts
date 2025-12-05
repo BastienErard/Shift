@@ -16,11 +16,11 @@ export function calculateWindOffset(
 	const radians = (windDirection * Math.PI) / 180;
 	const horizontalComponent = Math.sin(radians);
 
-	// 🆕 Augmente l'effet du vent (x2.5)
-	// 10 km/h = décalage de 2.5
-	// 30 km/h = décalage de 7.5
-	// 50 km/h = décalage de 12.5
-	const windStrength = Math.min(windSpeed / 4, 12.5); // Max 12.5 au lieu de 5
+	// 🆕 Augmente encore l'effet (x4 au lieu de x2.5)
+	// 10 km/h = décalage de 4
+	// 30 km/h = décalage de 12
+	// 50 km/h = décalage de 20
+	const windStrength = Math.min(windSpeed / 2.5, 20);
 
 	return -horizontalComponent * windStrength * heightFactor;
 }

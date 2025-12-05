@@ -3,6 +3,7 @@ export {
 	weatherCodeToWeather,
 	weatherCodeToIntensity,
 	precipitationToIntensity,
+	getWeatherIntensity, // 🆕
 	createLocationFromCoords,
 	LOCATIONS,
 	DEFAULT_LOCATION,

@@ -7,14 +7,34 @@ import { getPrecipitationColor } from "../palette";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../types";
 import { hasPrecipitation } from "../conditions";
 import { getCloudBottomY } from "./sky";
-import { calculateWindOffset } from "../utils/wind";
+
+// 🆕 Séquence de timings d'éclairs pré-générée (fixe)
+// Format: [frameStart, duration, xPosition, shapeIndex, size]
+const LIGHTNING_SEQUENCE: Array<[number, number, number, number, number]> = [
+	[120, 18, 0.25, 0, 1.0],
+	[320, 15, 0.65, 2, 0.85],
+	[480, 20, 0.45, 1, 1.1],
+	[750, 18, 0.75, 3, 0.9],
+	[780, 15, 0.35, 4, 0.8], // Burst proche
+	[1100, 20, 0.55, 0, 1.05],
+	[1450, 18, 0.2, 2, 0.95],
+	[1650, 15, 0.8, 1, 0.85],
+	[1900, 20, 0.4, 3, 1.15],
+	[2200, 18, 0.7, 4, 0.9],
+	[2230, 15, 0.5, 0, 0.8], // Burst proche
+	[2550, 20, 0.3, 2, 1.0],
+	[2900, 18, 0.85, 1, 0.95],
+	[3250, 15, 0.6, 3, 0.85],
+	[3600, 20, 0.25, 4, 1.1],
+];
+
+// Cycle total de la séquence
+const SEQUENCE_CYCLE_LENGTH = 3800;
 
 /**
- * Crée les gouttes de pluie
- *
- * 🎓 Les gouttes partent du bas des nuages
+ * Crée les gouttes de pluie animées avec effet diagonal
  */
-export function createRain(conditions: WorldConditions): Element[] {
+export function createRain(conditions: WorldConditions, animationOffset: number = 0): Element[] {
 	const { weather, weatherIntensity } = conditions;
 
 	if (weather !== "rain" && weather !== "storm") {
@@ -25,9 +45,9 @@ export function createRain(conditions: WorldConditions): Element[] {
 	const color = getPrecipitationColor(conditions);
 
 	const dropCounts = {
-		light: 25,
-		moderate: 50,
-		heavy: 80,
+		light: 30,
+		moderate: 60,
+		heavy: 100,
 	};
 
 	const dropCount = dropCounts[weatherIntensity];
@@ -41,34 +61,52 @@ export function createRain(conditions: WorldConditions): Element[] {
 	const { width: dropWidth, height: dropHeight } = dropDimensions[weatherIntensity];
 
 	const startY = getCloudBottomY(conditions);
-	const rainZone = CANVAS_HEIGHT - startY;
+	const totalFallDistance = CANVAS_HEIGHT - startY + dropHeight * 2;
 
-	// 🆕 Calcule l'inclinaison de la pluie
-	const windOffset = calculateWindOffset(conditions.windSpeed, conditions.windDirection, 1);
+	const fallSpeeds = {
+		light: 4,
+		moderate: 6,
+		heavy: 9,
+	};
+
+	const baseFallSpeed = fallSpeeds[weatherIntensity];
+
+	const windSpeed = conditions.windSpeed || 0;
+	const windDirection = conditions.windDirection || 0;
+
+	const radians = (windDirection * Math.PI) / 180;
+	const windComponent = -Math.sin(radians);
+
+	const windStrength = Math.min(windSpeed / 50, 1);
+	const rainSlant = windComponent * windStrength * 0.5;
 
 	for (let i = 0; i < dropCount; i++) {
-		const baseX = (i * CANVAS_WIDTH) / dropCount;
-		const offsetX = ((i * 17) % 20) - 10;
-		const y = startY + ((i * 31) % rainZone);
+		const baseX = ((i * 73 + i * i * 31) % (CANVAS_WIDTH + 200)) - 100;
+		const initialOffset = (((i * 97 + i * i * 53) % 1000) / 1000) * totalFallDistance;
+		const speedVariation = 1 + ((i * 13) % 10) / 20;
 
-		// 🆕 Ajoute un décalage proportionnel à la hauteur de chute
-		const fallDistance = y - startY;
-		const windDrift = (windOffset * fallDistance) / rainZone;
+		const absoluteY = initialOffset + animationOffset * baseFallSpeed * speedVariation;
+		const y = startY + (absoluteY % totalFallDistance);
+		const fallDistance = absoluteY % totalFallDistance;
+		const x = baseX + fallDistance * rainSlant;
 
-		const x = baseX + offsetX + windDrift;
-
-		elements.push(rectangle(x, y, dropWidth, dropHeight, color));
+		if (
+			y >= startY - dropHeight &&
+			y <= CANVAS_HEIGHT &&
+			x >= -dropWidth &&
+			x <= CANVAS_WIDTH + dropWidth
+		) {
+			elements.push(rectangle(x, y, dropWidth, dropHeight, color));
+		}
 	}
 
 	return elements;
 }
 
 /**
- * Crée les flocons de neige
- *
- * 🎓 Les flocons partent du bas des nuages
+ * Crée les flocons de neige animés
  */
-export function createSnow(conditions: WorldConditions): Element[] {
+export function createSnow(conditions: WorldConditions, animationOffset: number = 0): Element[] {
 	const { weather, weatherIntensity } = conditions;
 
 	if (weather !== "snow") {
@@ -78,39 +116,61 @@ export function createSnow(conditions: WorldConditions): Element[] {
 	const elements: Element[] = [];
 	const color = getPrecipitationColor(conditions);
 
-	// Nombre de flocons selon l'intensité
 	const flakeCounts = {
-		light: 25,
-		moderate: 45,
-		heavy: 75,
+		light: 30,
+		moderate: 50,
+		heavy: 80,
 	};
 
 	const flakeCount = flakeCounts[weatherIntensity];
 
-	// Position Y de départ : sous les nuages
 	const startY = getCloudBottomY(conditions);
-	const snowZone = CANVAS_HEIGHT - startY;
+	const totalFallDistance = CANVAS_HEIGHT - startY + 50;
 
-	// Génère les flocons
+	const fallSpeeds = {
+		light: 0.8,
+		moderate: 1.2,
+		heavy: 1.8,
+	};
+
+	const baseFallSpeed = fallSpeeds[weatherIntensity];
+
+	const windSpeed = conditions.windSpeed || 0;
+	const windDirection = conditions.windDirection || 0;
+
+	const radians = (windDirection * Math.PI) / 180;
+	const windComponent = -Math.sin(radians);
+
+	const windStrength = Math.min(windSpeed / 50, 1);
+	const snowDrift = windComponent * windStrength * 0.3;
+
 	for (let i = 0; i < flakeCount; i++) {
-		const baseX = (i * CANVAS_WIDTH) / flakeCount;
-		const offsetX = ((i * 23) % 30) - 15;
-		const x = baseX + offsetX;
+		const baseX = ((i * 67 + i * i * 41) % (CANVAS_WIDTH + 200)) - 100;
+		const initialOffset = (((i * 89 + i * i * 37) % 1000) / 1000) * totalFallDistance;
+		const speedVariation = 0.7 + ((i * 19) % 10) / 15;
 
-		// Position Y : de startY jusqu'en bas
-		const y = startY + ((i * 37) % snowZone);
+		const absoluteY = initialOffset + animationOffset * baseFallSpeed * speedVariation;
+		const y = startY + (absoluteY % totalFallDistance);
 
-		// Taille : varie entre 3 et 7 pixels
+		const oscillationFrequency = 0.015 + (i % 5) * 0.005;
+		const oscillationAmplitude = 8 + (i % 7) * 2;
+		const oscillation =
+			Math.sin((absoluteY * 0.1 + i * 10) * oscillationFrequency) * oscillationAmplitude;
+
+		const fallDistance = absoluteY % totalFallDistance;
+		const windDrift = fallDistance * snowDrift;
+
+		const x = baseX + oscillation + windDrift;
 		const size = 3 + ((i * 13) % 5);
 
-		// Flocon principal
-		elements.push(rectangle(x, y, size, size, color));
-
-		// Contour pour gros flocons
-		if (size >= 5) {
-			const outlineColor = { r: 200, g: 210, b: 220 };
-			elements.push(rectangle(x - 1, y - 1, size + 2, size + 2, outlineColor));
+		if (y >= startY - size && y <= CANVAS_HEIGHT && x >= -size && x <= CANVAS_WIDTH + size) {
 			elements.push(rectangle(x, y, size, size, color));
+
+			if (size >= 5) {
+				const outlineColor = { r: 200, g: 210, b: 220 };
+				elements.push(rectangle(x - 1, y - 1, size + 2, size + 2, outlineColor));
+				elements.push(rectangle(x, y, size, size, color));
+			}
 		}
 	}
 
@@ -118,52 +178,98 @@ export function createSnow(conditions: WorldConditions): Element[] {
 }
 
 /**
- * Crée un éclair
- *
- * 🎓 L'éclair part du bas des nuages
+ * Crée des éclairs animés avec séquence pré-générée
  */
-export function createLightning(conditions: WorldConditions): Element[] {
+export function createLightning(
+	conditions: WorldConditions,
+	animationOffset: number = 0
+): Element[] {
 	const { weather } = conditions;
 
 	if (weather !== "storm") {
 		return [];
 	}
 
+	// 🆕 DEBUG : Affiche dans la console
+	const cycleLength = 1800;
+	const cyclePosition = animationOffset % cycleLength;
+
 	const elements: Element[] = [];
-
-	// Couleur de l'éclair
-	const lightningColor = { r: 255, g: 255, b: 200 };
-
-	// Position de base : sous les nuages
-	const startX = CANVAS_WIDTH * 0.6;
 	const startY = getCloudBottomY(conditions);
 
-	// Forme de l'éclair en zigzag
-	const segments = [
-		{ x: 0, y: 0, width: 8, height: 25 },
-		{ x: -15, y: 25, width: 20, height: 8 },
-		{ x: -15, y: 33, width: 8, height: 30 },
-		{ x: -30, y: 63, width: 20, height: 8 },
-		{ x: -30, y: 71, width: 6, height: 35 },
-		{ x: -40, y: 106, width: 15, height: 6 },
-		{ x: -40, y: 112, width: 5, height: 25 },
+	const lightningEvents = [
+		[0, 20, 0.3, 0],
+		[240, 18, 0.65, 1],
+		[500, 20, 0.45, 2],
+		[750, 18, 0.75, 3],
+		[780, 15, 0.35, 4],
+		[1050, 20, 0.55, 0],
+		[1350, 18, 0.25, 1],
+		[1600, 20, 0.8, 2],
 	];
 
-	// Lueur derrière l'éclair
-	const glowColor = { r: 200, g: 200, b: 255 };
-	elements.push(rectangle(startX - 5, startY - 5, 18, 35, glowColor));
+	// Formes de l'éclair
+	const lightningShapes = [
+		[
+			{ x: 0, y: 0, width: 8, height: 30 },
+			{ x: -18, y: 30, width: 24, height: 8 },
+			{ x: -18, y: 38, width: 8, height: 35 },
+			{ x: -32, y: 73, width: 22, height: 8 },
+			{ x: -32, y: 81, width: 7, height: 40 },
+		],
+		[
+			{ x: 0, y: 0, width: 6, height: 28 },
+			{ x: 12, y: 28, width: 18, height: 6 },
+			{ x: 12, y: 34, width: 6, height: 32 },
+			{ x: 24, y: 66, width: 16, height: 6 },
+			{ x: 24, y: 72, width: 5, height: 35 },
+		],
+		[
+			{ x: 0, y: 0, width: 7, height: 26 },
+			{ x: -14, y: 26, width: 20, height: 7 },
+			{ x: -14, y: 33, width: 7, height: 30 },
+			{ x: 6, y: 63, width: 18, height: 7 },
+			{ x: 6, y: 70, width: 6, height: 38 },
+		],
+		[
+			{ x: 0, y: 0, width: 8, height: 25 },
+			{ x: -15, y: 25, width: 20, height: 8 },
+			{ x: -15, y: 33, width: 8, height: 30 },
+		],
+		[
+			{ x: 0, y: 0, width: 7, height: 22 },
+			{ x: 10, y: 22, width: 16, height: 7 },
+			{ x: 10, y: 29, width: 7, height: 24 },
+			{ x: -8, y: 53, width: 18, height: 7 },
+			{ x: -8, y: 60, width: 7, height: 26 },
+		],
+	];
 
-	// Segments de l'éclair
-	for (const segment of segments) {
-		elements.push(
-			rectangle(
-				startX + segment.x,
-				startY + segment.y,
-				segment.width,
-				segment.height,
-				lightningColor
-			)
-		);
+	// Parcourt les événements
+	for (const event of lightningEvents) {
+		const [frameStart, duration, xPos, shapeIdx] = event;
+
+		if (cyclePosition >= frameStart && cyclePosition < frameStart + duration) {
+			const startX = CANVAS_WIDTH * xPos;
+			const segments = lightningShapes[shapeIdx];
+
+			const lightningColor = { r: 255, g: 255, b: 220 };
+			const glowColor = { r: 220, g: 220, b: 255 };
+
+			elements.push(rectangle(startX - 10, startY - 10, 35, 60, glowColor));
+
+			for (const segment of segments) {
+				elements.push(
+					rectangle(
+						startX + segment.x,
+						startY + segment.y,
+						segment.width,
+						segment.height,
+						lightningColor
+					)
+				);
+			}
+		}
 	}
 
 	return elements;
@@ -172,16 +278,22 @@ export function createLightning(conditions: WorldConditions): Element[] {
 /**
  * Crée tous les effets météorologiques
  */
-export function createWeatherEffects(conditions: WorldConditions): Element[] {
-	if (!hasPrecipitation(conditions)) {
-		return [];
-	}
-
+export function createWeatherEffects(
+	conditions: WorldConditions,
+	animationOffset: number = 0
+): Element[] {
 	const elements: Element[] = [];
 
-	elements.push(...createRain(conditions));
-	elements.push(...createSnow(conditions));
-	elements.push(...createLightning(conditions));
+	// Pluie et neige seulement si précipitations
+	if (hasPrecipitation(conditions)) {
+		elements.push(...createRain(conditions, animationOffset));
+		elements.push(...createSnow(conditions, animationOffset));
+	}
+
+	// 🆕 Éclairs indépendants (même sans pluie)
+	if (conditions.weather === "storm") {
+		elements.push(...createLightning(conditions, animationOffset));
+	}
 
 	return elements;
 }

@@ -180,3 +180,25 @@ export function precipitationToIntensity(precipitation: number): "light" | "mode
 	if (precipitation < 10) return "moderate";
 	return "heavy";
 }
+
+/**
+ * Détermine l'intensité des précipitations
+ *
+ * @param precipitation Précipitations en mm
+ * @param weatherCode Code météo WMO
+ * @returns Intensité
+ */
+export function getWeatherIntensity(
+	precipitation: number,
+	weatherCode: number
+): "light" | "moderate" | "heavy" {
+	// Si pas de précipitations, base sur le code météo
+	if (precipitation === 0) {
+		return weatherCodeToIntensity(weatherCode);
+	}
+
+	// Intensité basée sur les mm de pluie/neige
+	if (precipitation < 2) return "light";
+	if (precipitation < 7) return "moderate";
+	return "heavy";
+}

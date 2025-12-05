@@ -293,25 +293,29 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 							</div>
 						</div>
 
-						{/* Slider Couverture nuageuse */}
-						<div>
-							<div className="flex justify-between items-center mb-1">
-								<label className="text-xs font-medium text-gray-500 dark:text-gray-400">
-									☁️ {t.cloudCover || "Couverture nuageuse"}
-								</label>
-								<span className="text-xs font-semibold text-sky-600 dark:text-sky-400">
-									{manualConditions.cloudCover ?? 50}%
-								</span>
+						{/* Slider Couverture nuageuse - Seulement si pas météo dégagée */}
+						{manualConditions.weather !== "clear" && (
+							<div>
+								<div className="flex justify-between items-center mb-1">
+									<label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+										☁️ {t.cloudCover || "Couverture nuageuse"}
+									</label>
+									<span className="text-xs font-semibold text-sky-600 dark:text-sky-400">
+										{manualConditions.cloudCover ?? 50}%
+									</span>
+								</div>
+								<input
+									type="range"
+									min={0}
+									max={100}
+									value={manualConditions.cloudCover ?? 50}
+									onChange={(e) =>
+										updateManualCondition("cloudCover", parseInt(e.target.value, 10))
+									}
+									className="w-full h-2 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sky-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-sky-500 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
+								/>
 							</div>
-							<input
-								type="range"
-								min={0}
-								max={100}
-								value={manualConditions.cloudCover ?? 50}
-								onChange={(e) => updateManualCondition("cloudCover", parseInt(e.target.value, 10))}
-								className="w-full h-2 rounded-full appearance-none bg-gray-200 dark:bg-gray-700 cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sky-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-sky-500 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
-							/>
-						</div>
+						)}
 
 						{/* Section Vent */}
 						<div className="pt-2 border-t border-gray-200 dark:border-gray-700">
