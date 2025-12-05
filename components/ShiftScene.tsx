@@ -180,7 +180,10 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 						{isLoading ? (
 							<p className="text-xs text-gray-500 dark:text-gray-400 text-center">Chargement...</p>
 						) : error ? (
-							<p className="text-xs text-red-500 text-center">Erreur de connexion</p>
+							<div className="text-xs text-amber-600 dark:text-amber-400 text-center space-y-1">
+								<p className="font-semibold">⚠️ Météo indisponible</p>
+								<p className="text-[10px] opacity-75">Affichage avec données par défaut</p>
+							</div>
 						) : (
 							<div className="space-y-1">
 								<div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">

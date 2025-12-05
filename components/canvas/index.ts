@@ -1,1 +1,1 @@
-export { default as PixelCanvas } from "./PixelCanvas";
+export { PixelCanvas } from "./PixelCanvas";

@@ -1,29 +1,47 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { buildScene, buildTestScene } from "@/lib/canvas/builder";
+import { renderScene } from "@/lib/canvas/renderer";
 import type { Scene } from "@/lib/canvas/types";
 import type { WorldConditions } from "@/lib/canvas/conditions";
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/canvas/types";
-import { renderScene } from "@/lib/canvas/renderer";
-import { buildTestScene, buildScene } from "@/lib/canvas/builder";
+import type { TestPreset } from "@/lib/canvas/test-presets";
+import { getSkyColor, getGroundColor } from "@/lib/canvas/palette";
+import {
+	lerpColor,
+	easeInOutCubic,
+	conditionsHaveChanged,
+	TRANSITION_DURATION_FRAMES,
+} from "@/lib/canvas/transitions";
+import type { Color } from "@/lib/canvas/types";
 
 interface PixelCanvasProps {
-	mode?: "test" | "simulation" | "live";
-	testPreset?: "sunny" | "night" | "rainy" | "snowy";
+	mode?: "hero" | "simulation" | "test";
+	testPreset?: TestPreset;
 	conditions?: WorldConditions;
-	className?: string;
 }
 
-export default function PixelCanvas({
-	mode = "test",
-	testPreset = "sunny",
-	conditions,
-	className = "",
-}: PixelCanvasProps) {
+export function PixelCanvas({ mode = "hero", testPreset = "sunny", conditions }: PixelCanvasProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const animationFrameRef = useRef<number | undefined>(undefined);
+	const smokeOffsetRef = useRef<number>(0);
+
+	// State de transition
+	const transitionRef = useRef<{
+		isTransitioning: boolean;
+		currentFrame: number;
+		prevConditions: WorldConditions | null;
+		prevSkyColor: Color | null;
+		prevGroundColor: Color | null;
+	}>({
+		isTransitioning: false,
+		currentFrame: 0,
+		prevConditions: null,
+		prevSkyColor: null,
+		prevGroundColor: null,
+	});
+
 	const [error, setError] = useState<string | null>(null);
-	const animationFrameRef = useRef<number | null>(null);
-	const smokeOffsetRef = useRef<number>(0); // 🆕 Offset pour l'animation de la fumée
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -43,14 +61,74 @@ export default function PixelCanvas({
 		const animate = () => {
 			try {
 				let scene: Scene;
+				let finalSkyColor: Color;
+				let finalGroundColor: Color;
 
 				if (mode === "simulation" && conditions) {
+					// Détecte si les conditions ont changé
+					if (conditionsHaveChanged(transitionRef.current.prevConditions, conditions)) {
+						// Démarre une transition
+						if (!transitionRef.current.isTransitioning) {
+							transitionRef.current.isTransitioning = true;
+							transitionRef.current.currentFrame = 0;
+							transitionRef.current.prevSkyColor = transitionRef.current.prevConditions
+								? getSkyColor(transitionRef.current.prevConditions)
+								: getSkyColor(conditions);
+							transitionRef.current.prevGroundColor = transitionRef.current.prevConditions
+								? getGroundColor(transitionRef.current.prevConditions)
+								: getGroundColor(conditions);
+						}
+					}
+
+					// Calcule les couleurs avec transition
+					if (transitionRef.current.isTransitioning) {
+						const progress = Math.min(
+							transitionRef.current.currentFrame / TRANSITION_DURATION_FRAMES,
+							1
+						);
+						const easedProgress = easeInOutCubic(progress);
+
+						const targetSkyColor = getSkyColor(conditions);
+						const targetGroundColor = getGroundColor(conditions);
+
+						finalSkyColor = lerpColor(
+							transitionRef.current.prevSkyColor!,
+							targetSkyColor,
+							easedProgress
+						);
+
+						finalGroundColor = lerpColor(
+							transitionRef.current.prevGroundColor!,
+							targetGroundColor,
+							easedProgress
+						);
+
+						// Incrémente le compteur de transition
+						transitionRef.current.currentFrame++;
+
+						// Fin de la transition
+						if (progress >= 1) {
+							transitionRef.current.isTransitioning = false;
+							transitionRef.current.prevConditions = { ...conditions };
+						}
+					} else {
+						// Pas de transition en cours
+						finalSkyColor = getSkyColor(conditions);
+						finalGroundColor = getGroundColor(conditions);
+						transitionRef.current.prevConditions = { ...conditions };
+					}
+
+					// Construit la scène avec les couleurs interpolées
 					scene = buildScene(
 						conditions,
 						conditions.cloudCover,
 						smokeOffsetRef.current,
-						smokeOffsetRef.current // Même offset pour météo
+						smokeOffsetRef.current
 					);
+
+					// Remplace les couleurs de la scène
+					scene.skyColor = finalSkyColor;
+					scene.groundColor = finalGroundColor;
 				} else if (mode === "test") {
 					scene = buildTestScene(testPreset);
 				} else {
@@ -59,7 +137,7 @@ export default function PixelCanvas({
 
 				renderScene(ctx, scene);
 
-				// 🆕 Incrémente SANS LIMITE (pas de reset)
+				// Incrémente l'offset d'animation
 				smokeOffsetRef.current += 0.5;
 
 				setError(null);
@@ -80,22 +158,19 @@ export default function PixelCanvas({
 	}, [mode, testPreset, conditions]);
 
 	return (
-		<div className={`relative ${className}`} style={{ aspectRatio: "4 / 3" }}>
+		<div className="relative w-full h-full">
 			<canvas
 				ref={canvasRef}
-				width={CANVAS_WIDTH}
-				height={CANVAS_HEIGHT}
-				className="absolute inset-0 w-full h-full rounded-xl"
+				width={800}
+				height={600}
+				className="w-full h-full"
 				style={{
 					imageRendering: "pixelated",
 				}}
-				aria-label="Scène pixel art évolutive de Shift"
-				role="img"
 			/>
-
 			{error && (
-				<div className="absolute inset-0 flex items-center justify-center bg-red-100 dark:bg-red-900 rounded-xl">
-					<p className="text-red-600 dark:text-red-200 text-sm">{error}</p>
+				<div className="absolute inset-0 flex items-center justify-center bg-red-50 dark:bg-red-900/20">
+					<p className="text-sm text-red-600 dark:text-red-400">{error}</p>
 				</div>
 			)}
 		</div>

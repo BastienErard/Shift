@@ -25,9 +25,16 @@ export function useWeather({
 	const [data, setData] = useState<WeatherData | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
+	const [retryCount, setRetryCount] = useState(0); // 🆕 Compteur de tentatives
 
 	const refetch = useCallback(async () => {
 		if (!enabled) return;
+
+		// 🆕 Limite les retry à 2 tentatives
+		if (retryCount >= 2) {
+			console.warn("⚠️ Nombre maximum de tentatives atteint. Mode dégradé activé.");
+			return;
+		}
 
 		setIsLoading(true);
 		setError(null);
@@ -35,12 +42,17 @@ export function useWeather({
 		try {
 			const weatherData = await fetchWeather(location);
 			setData(weatherData);
+			setRetryCount(0); // 🆕 Reset le compteur si succès
 		} catch (err) {
-			setError(err instanceof Error ? err : new Error("Erreur inconnue"));
+			const errorMessage = err instanceof Error ? err.message : "Erreur inconnue";
+			setError(new Error(errorMessage));
+			setRetryCount((prev) => prev + 1); // 🆕 Incrémente le compteur
+
+			console.error("❌ Erreur API météo:", errorMessage);
 		} finally {
 			setIsLoading(false);
 		}
-	}, [location, enabled]);
+	}, [location, enabled, retryCount]);
 
 	// Fetch initial
 	useEffect(() => {
