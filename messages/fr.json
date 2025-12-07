@@ -1,7 +1,12 @@
 {
 	"metadata": {
 		"title": "Shift - Un monde pixel art évolutif",
-		"description": "Une scène pixel art générative qui évolue avec la météo, l'heure et les saisons."
+		"description": "Une scène pixel art générative qui évolue avec la météo, l'heure et les saisons.",
+		"keywords": "pixel art, génératif, météo, saisons, canvas, animation, web app, créatif",
+		"ogTitle": "Shift - Un monde pixel art évolutif",
+		"ogDescription": "Découvrez Shift : une scène pixel art vivante qui s'adapte à la météo réelle, l'heure du jour et les saisons. Un projet créatif unique.",
+		"twitterTitle": "Shift - Pixel art génératif",
+		"twitterDescription": "Une scène pixel art qui évolue avec la météo, l'heure et les saisons."
 	},
 	"home": {
 		"title": "Shift",

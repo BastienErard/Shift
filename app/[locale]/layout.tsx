@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
+import { JsonLd } from "@/components/JsonLd";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -20,10 +21,61 @@ const geistMono = Geist_Mono({
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
 	const { locale } = await params;
 	const t = await getTranslations({ locale, namespace: "metadata" });
+	const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://shift.example.com";
 
 	return {
 		title: t("title"),
 		description: t("description"),
+		keywords: t("keywords"),
+		authors: [{ name: "Shift Project" }],
+		creator: "Shift Project",
+		metadataBase: new URL(baseUrl),
+		alternates: {
+			canonical: `${baseUrl}/${locale}`,
+			languages: {
+				fr: `${baseUrl}/fr`,
+				en: `${baseUrl}/en`,
+			},
+		},
+		openGraph: {
+			title: t("ogTitle"),
+			description: t("ogDescription"),
+			url: `${baseUrl}/${locale}`,
+			siteName: "Shift",
+			locale: locale === "fr" ? "fr_FR" : "en_US",
+			alternateLocale: locale === "fr" ? "en_US" : "fr_FR",
+			type: "website",
+	images: [
+				{
+					url: `${baseUrl}/opengraph-image`,
+					width: 1200,
+					height: 630,
+					alt: t("title"),
+				},
+			],
+		},
+		twitter: {
+			card: "summary_large_image",
+			title: t("twitterTitle"),
+			description: t("twitterDescription"),
+			images: [`${baseUrl}/twitter-image`],
+		},
+		robots: {
+			index: true,
+			follow: true,
+			googleBot: {
+				index: true,
+				follow: true,
+				"max-video-preview": -1,
+				"max-image-preview": "large",
+				"max-snippet": -1,
+			},
+		},
+		verification: {
+			// Ajoutez vos codes de vérification ici après configuration
+			// google: "votre-code-google",
+			// yandex: "votre-code-yandex",
+		},
 	};
 }
 
@@ -49,6 +101,9 @@ export default async function LocaleLayout({
 	return (
 		<html lang={locale} suppressHydrationWarning className="w-full">
 			<head>
+				{/* Preconnect pour améliorer les performances */}
+				<link rel="preconnect" href="https://api.open-meteo.com" />
+				<link rel="dns-prefetch" href="https://api.open-meteo.com" />
 				<script
 					dangerouslySetInnerHTML={{
 						__html: `
@@ -77,6 +132,7 @@ export default async function LocaleLayout({
 			`,
 					}}
 				/>
+				<JsonLd locale={locale} />
 			</head>
 			<body
 				className={`

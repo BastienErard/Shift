@@ -14,6 +14,15 @@ import {
 	createGroundTexture,
 	createRiver,
 	createBridge,
+	// Nouveaux éléments d'ambiance
+	createBirds,
+	createFallingLeaves,
+	createForegroundFallingLeaves,
+	createFireflies,
+	createMorningMist,
+	createSpringFlowers,
+	createIcicles,
+	createCelestialReflection,
 } from "./elements";
 
 /**
@@ -48,13 +57,25 @@ export function buildScene(
 		// Étoiles filantes (la nuit uniquement)
 		...createShootingStar(conditions, weatherOffset),
 
+		// Oiseaux volant dans le ciel
+		...createBirds(conditions, weatherOffset),
+
+		// Feuilles qui tombent (automne)
+		...createFallingLeaves(conditions, weatherOffset),
+
 		// ====== SOL - ARRIÈRE-PLAN ======
 		// Forêt en arrière-plan (plusieurs plans de profondeur)
 		...createForest(conditions),
 
+		// Brume matinale (aube)
+		...createMorningMist(conditions),
+
 		// ====== SOL - TEXTURE ======
 		// Texture du sol (herbe, rochers, neige)
 		...createGroundTexture(conditions),
+
+		// Fleurs (printemps)
+		...createSpringFlowers(conditions),
 
 		// ====== ARBRES ARRIÈRE-PLAN (derrière la maison) ======
 		// Arbre partiellement caché derrière la maison (à droite)
@@ -63,6 +84,9 @@ export function buildScene(
 		// ====== ÉLÉMENTS PRINCIPAUX ======
 		// Maison cottage
 		...createHouse(conditions),
+
+		// Glaçons sous le toit (hiver)
+		...createIcicles(conditions),
 
 		// Arbre principal (à gauche de la maison, devant)
 		...createTree(conditions, 120, 1.0),
@@ -74,6 +98,9 @@ export function buildScene(
 		// Rivière au premier plan (tout en bas)
 		...createRiver(conditions, weatherOffset),
 
+		// Reflet du soleil/lune dans la rivière
+		...createCelestialReflection(conditions, weatherOffset),
+
 		// Petit pont
 		...createBridge(conditions),
 
@@ -82,9 +109,16 @@ export function buildScene(
 		// La berge sud commence à Y = CANVAS_HEIGHT - 90 + 50 = 560, on met le pied de l'arbre là
 		...createTree(conditions, 680, 1.2, CANVAS_HEIGHT - 28),
 
+		// Feuilles qui tombent de l'arbre au premier plan (automne)
+		// Doit être APRÈS l'arbre pour apparaître devant
+		...createForegroundFallingLeaves(conditions, weatherOffset),
+
 		// ====== ANIMATIONS ======
 		// Fumée de cheminée
 		...createChimneySmoke(conditions, smokeOffset),
+
+		// Lucioles (nuit d'été)
+		...createFireflies(conditions, weatherOffset),
 
 		// ====== MÉTÉO ======
 		// Effets météo (pluie, neige, éclairs)

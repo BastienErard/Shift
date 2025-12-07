@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Background: Sky gradient -->
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB"/>
+      <stop offset="100%" style="stop-color:#B0E0E6"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" fill="url(#sky)" rx="6"/>
+
+  <!-- Sun -->
+  <circle cx="24" cy="8" r="5" fill="#FFD700"/>
+  <circle cx="24" cy="8" r="4" fill="#FFA500"/>
+
+  <!-- Hills/Ground -->
+  <path d="M0 20 Q8 14 16 18 Q24 22 32 16 L32 32 L0 32 Z" fill="#228B22"/>
+  <path d="M0 24 Q10 18 20 22 Q28 26 32 20 L32 32 L0 32 Z" fill="#32CD32"/>
+
+  <!-- Small tree (pixel style) -->
+  <rect x="7" y="18" width="2" height="6" fill="#8B4513"/>
+  <rect x="5" y="14" width="6" height="5" fill="#006400"/>
+  <rect x="6" y="12" width="4" height="3" fill="#228B22"/>
+
+  <!-- House -->
+  <rect x="18" y="20" width="8" height="7" fill="#DEB887"/>
+  <polygon points="18,20 22,15 26,20" fill="#8B0000"/>
+  <rect x="20" y="22" width="2" height="3" fill="#654321"/>
+  <rect x="23" y="21" width="2" height="2" fill="#87CEEB"/>
+</svg>

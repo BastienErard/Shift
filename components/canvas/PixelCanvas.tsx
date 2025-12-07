@@ -15,6 +15,10 @@ import {
 } from "@/lib/canvas/transitions";
 import type { Color } from "@/lib/canvas/types";
 
+// Throttle à 30 FPS (suffisant pour du pixel art, réduit la charge CPU)
+const TARGET_FPS = 30;
+const FRAME_INTERVAL = 1000 / TARGET_FPS;
+
 interface PixelCanvasProps {
 	mode?: "hero" | "simulation" | "test";
 	testPreset?: TestPreset;
@@ -25,6 +29,7 @@ export function PixelCanvas({ mode = "hero", testPreset = "sunny", conditions }:
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const animationFrameRef = useRef<number | undefined>(undefined);
 	const smokeOffsetRef = useRef<number>(0);
+	const lastFrameTimeRef = useRef<number>(0);
 
 	// State de transition
 	const transitionRef = useRef<{
@@ -58,7 +63,15 @@ export function PixelCanvas({ mode = "hero", testPreset = "sunny", conditions }:
 			return;
 		}
 
-		const animate = () => {
+		const animate = (currentTime: number) => {
+			// Throttle à 30 FPS pour économiser les ressources
+			const elapsed = currentTime - lastFrameTimeRef.current;
+			if (elapsed < FRAME_INTERVAL) {
+				animationFrameRef.current = requestAnimationFrame(animate);
+				return;
+			}
+			lastFrameTimeRef.current = currentTime - (elapsed % FRAME_INTERVAL);
+
 			try {
 				let scene: Scene;
 				let finalSkyColor: Color;
@@ -148,7 +161,7 @@ export function PixelCanvas({ mode = "hero", testPreset = "sunny", conditions }:
 			}
 		};
 
-		animate();
+		animationFrameRef.current = requestAnimationFrame(animate);
 
 		return () => {
 			if (animationFrameRef.current) {

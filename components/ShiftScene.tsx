@@ -131,9 +131,20 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 		setManualConditions((prev) => {
 			const updated = { ...prev, [key]: value };
 
-			// Si on passe en météo "clear", forcer cloudCover à 0
-			if (key === "weather" && value === "clear") {
-				updated.cloudCover = 0;
+			// Ajustement automatique de la couverture nuageuse selon la météo
+			if (key === "weather") {
+				if (value === "clear") {
+					updated.cloudCover = 0;
+				} else if (value === "storm") {
+					// Orage = ciel très couvert
+					updated.cloudCover = Math.max(updated.cloudCover ?? 0, 85);
+				} else if (value === "rain" || value === "snow") {
+					// Pluie/neige = ciel couvert
+					updated.cloudCover = Math.max(updated.cloudCover ?? 0, 60);
+				} else if (value === "cloudy") {
+					// Nuageux = au moins 40%
+					updated.cloudCover = Math.max(updated.cloudCover ?? 0, 40);
+				}
 			}
 
 			return updated;

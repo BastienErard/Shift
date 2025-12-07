@@ -54,3 +54,18 @@ export {
 	createWeatherEffects,
 	createFog,
 } from "./weather";
+
+// ============================================================================
+// AMBIANCE (oiseaux, lucioles, feuilles, etc.)
+// ============================================================================
+
+export {
+	createBirds,
+	createFallingLeaves,
+	createForegroundFallingLeaves,
+	createFireflies,
+	createMorningMist,
+	createSpringFlowers,
+	createIcicles,
+	createCelestialReflection,
+} from "./ambiance";

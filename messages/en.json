@@ -1,7 +1,12 @@
 {
 	"metadata": {
 		"title": "Shift - An evolving pixel art world",
-		"description": "A generative pixel art scene that evolves with weather, time and seasons."
+		"description": "A generative pixel art scene that evolves with weather, time and seasons.",
+		"keywords": "pixel art, generative, weather, seasons, canvas, animation, web app, creative",
+		"ogTitle": "Shift - An evolving pixel art world",
+		"ogDescription": "Discover Shift: a living pixel art scene that adapts to real weather, time of day, and seasons. A unique creative project.",
+		"twitterTitle": "Shift - Generative pixel art",
+		"twitterDescription": "A pixel art scene that evolves with weather, time and seasons."
 	},
 	"home": {
 		"title": "Shift",

@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import ShiftScene from "@/components/ShiftScene";
+import ShiftSceneLoader from "@/components/ShiftSceneLoader";
 
 export default function Home() {
 	const t = useTranslations("home");
@@ -70,7 +70,7 @@ export default function Home() {
 
 			{/* Canvas + Simulation Section */}
 			<section className="py-6">
-				<ShiftScene translations={translations} />
+				<ShiftSceneLoader translations={translations} />
 			</section>
 
 			{/* Features Section */}
