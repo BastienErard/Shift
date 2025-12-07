@@ -1,13 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useParams } from "next/navigation";
+import { Link } from "@/i18n/routing";
+import { usePathname } from "next/navigation";
+import { useLocale } from "next-intl";
 import { useEffect, useState } from "react";
 
 export default function Header() {
 	const pathname = usePathname();
-	const params = useParams();
-	const currentLocale = (params.locale as string) || "fr";
+	const currentLocale = useLocale();
+	// Enlève le préfixe de locale du pathname pour construire les liens
 	const pathnameWithoutLocale = pathname.replace(/^\/(fr|en)/, "") || "/";
 
 	const [scrolled, setScrolled] = useState(false);
@@ -125,20 +126,22 @@ function LanguageSelector({
 	pathname: string;
 }) {
 	const locales = [
-		{ code: "fr", label: "FR" },
-		{ code: "en", label: "EN" },
+		{ code: "fr" as const, label: "FR" },
+		{ code: "en" as const, label: "EN" },
 	];
 
 	return (
 		<div className="flex rounded-full bg-gray-100 dark:bg-gray-800 p-1">
 			{locales.map((locale) => {
 				const isActive = currentLocale === locale.code;
-				const href = `/${locale.code}${pathname === "/" ? "" : pathname}`;
+				// Utilise le pathname sans locale, next-intl s'occupe du préfixe
+				const href = pathname === "/" ? "/" : pathname;
 
 				return (
 					<Link
 						key={locale.code}
 						href={href}
+						locale={locale.code}
 						className={`
 							px-4 py-1.5 text-sm font-medium rounded-full transition-all
 							${
