@@ -70,8 +70,8 @@ const DEFAULT_CONDITIONS: WorldConditions = {
 	weatherIntensity: "moderate",
 	temperature: 20,
 	daysSinceCreation: 0,
-	cloudCover: 50,
-	windSpeed: 15, // 🆕
+	cloudCover: 0, // 0% pour ciel dégagé par défaut
+	windSpeed: 15,
 	windDirection: 270,
 };
 
@@ -128,7 +128,16 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 		key: K,
 		value: WorldConditions[K]
 	) => {
-		setManualConditions((prev) => ({ ...prev, [key]: value }));
+		setManualConditions((prev) => {
+			const updated = { ...prev, [key]: value };
+
+			// Si on passe en météo "clear", forcer cloudCover à 0
+			if (key === "weather" && value === "clear") {
+				updated.cloudCover = 0;
+			}
+
+			return updated;
+		});
 	};
 
 	// Détermine le texte de localisation à afficher
@@ -356,7 +365,6 @@ export default function ShiftScene({ translations }: ShiftSceneProps) {
 									value={(manualConditions.windDirection ?? 270).toString()}
 									onChange={(value) => updateManualCondition("windDirection", parseInt(value, 10))}
 									options={[
-										{ value: "0", label: `↕️ ${t.wind?.directions?.none || "Aucun"}` },
 										{ value: "90", label: `← ${t.wind?.directions?.left || "Gauche"}` },
 										{ value: "270", label: `→ ${t.wind?.directions?.right || "Droite"}` },
 									]}

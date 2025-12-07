@@ -5,10 +5,29 @@
 export { createHouse, createChimneySmoke } from "./house";
 
 // ============================================================================
-// ARBRE
+// ARBRES ET VÉGÉTATION
 // ============================================================================
 
-export { createTree, createTrees, createBush } from "./tree";
+export {
+	createTree,
+	createTrees,
+	createBush,
+	createBushes,
+	createForest,
+	createBackgroundTree,
+} from "./tree";
+
+// ============================================================================
+// SOL ET TERRAIN
+// ============================================================================
+
+export { createGroundTexture, createPath } from "./ground";
+
+// ============================================================================
+// RIVIÈRE
+// ============================================================================
+
+export { createRiver, createBridge } from "./river";
 
 // ============================================================================
 // CIEL (soleil, lune, étoiles, nuages)
@@ -18,7 +37,7 @@ export {
 	createSun,
 	createMoon,
 	createStars,
-	createCloud,
+	createShootingStar,
 	createClouds,
 	createSkyElements,
 	getCloudBottomY,

@@ -6,11 +6,31 @@ import {
 	createHouse,
 	createChimneySmoke,
 	createTree,
+	createForest,
+	createBushes,
 	createSkyElements,
+	createShootingStar,
 	createWeatherEffects,
+	createGroundTexture,
+	createRiver,
+	createBridge,
 } from "./elements";
 
-/* Construit une scène complète selon les conditions actuelles */
+/**
+ * Construit une scène complète selon les conditions actuelles
+ *
+ * Ordre de rendu (du fond vers l'avant) :
+ * 1. Ciel (couleur de fond)
+ * 2. Éléments célestes (soleil/lune, étoiles, nuages)
+ * 3. Sol (couleur de base)
+ * 4. Forêt arrière-plan (3 plans de profondeur)
+ * 5. Texture du sol
+ * 6. Maison
+ * 7. Arbre principal + buissons
+ * 8. Rivière + pont
+ * 9. Fumée de cheminée
+ * 10. Effets météo (pluie, neige, éclairs)
+ */
 export function buildScene(
 	conditions: WorldConditions,
 	cloudCover?: number,
@@ -20,25 +40,54 @@ export function buildScene(
 	const skyColor = getSkyColor(conditions);
 	const groundColor = getGroundColor(conditions);
 
-	// 🆕 Sépare les éclairs des autres effets météo
-	const lightningElements =
-		conditions.weather === "storm"
-			? require("./elements/weather").createLightning(conditions, weatherOffset)
-			: [];
-
 	const elements = [
-		// Ciel (base)
-		...createSkyElements(conditions, cloudCover),
+		// ====== CIEL ======
+		// Éléments célestes (soleil/lune, étoiles, nuages) avec animation
+		...createSkyElements(conditions, cloudCover, weatherOffset),
 
-		// 🆕 Flash des éclairs (PAR-DESSUS le ciel, SOUS les nuages)
-		// Note: Le flash est déjà dans createLightning, pas besoin de filtre spécial
+		// Étoiles filantes (la nuit uniquement)
+		...createShootingStar(conditions, weatherOffset),
 
-		// Éléments au sol
-		...createTree(conditions),
+		// ====== SOL - ARRIÈRE-PLAN ======
+		// Forêt en arrière-plan (plusieurs plans de profondeur)
+		...createForest(conditions),
+
+		// ====== SOL - TEXTURE ======
+		// Texture du sol (herbe, rochers, neige)
+		...createGroundTexture(conditions),
+
+		// ====== ARBRES ARRIÈRE-PLAN (derrière la maison) ======
+		// Arbre partiellement caché derrière la maison (à droite)
+		...createTree(conditions, 520, 0.9),
+
+		// ====== ÉLÉMENTS PRINCIPAUX ======
+		// Maison cottage
 		...createHouse(conditions),
+
+		// Arbre principal (à gauche de la maison, devant)
+		...createTree(conditions, 120, 1.0),
+
+		// Buissons décoratifs
+		...createBushes(conditions),
+
+		// ====== RIVIÈRE ======
+		// Rivière au premier plan (tout en bas)
+		...createRiver(conditions, weatherOffset),
+
+		// Petit pont
+		...createBridge(conditions),
+
+		// ====== ARBRE PREMIER PLAN ======
+		// Un arbre au premier plan sur la berge SUD (tronc ancré sur la terre verte au sud de la rivière)
+		// La berge sud commence à Y = CANVAS_HEIGHT - 90 + 50 = 560, on met le pied de l'arbre là
+		...createTree(conditions, 680, 1.2, CANVAS_HEIGHT - 28),
+
+		// ====== ANIMATIONS ======
+		// Fumée de cheminée
 		...createChimneySmoke(conditions, smokeOffset),
 
-		// Météo (pluie/neige + éclairs)
+		// ====== MÉTÉO ======
+		// Effets météo (pluie, neige, éclairs)
 		...createWeatherEffects(conditions, weatherOffset),
 	];
 
@@ -53,9 +102,10 @@ export function buildScene(
 	};
 }
 
-/* Construit une scène de test avec des conditions prédéfinies */
+/**
+ * Construit une scène de test avec des conditions prédéfinies
+ */
 export function buildTestScene(preset: "sunny" | "night" | "rainy" | "snowy" = "sunny"): Scene {
-	/* Conditions prédéfinies pour chaque preset */
 	const testConditions: Record<string, WorldConditions> = {
 		sunny: {
 			timeOfDay: "noon",
@@ -64,6 +114,9 @@ export function buildTestScene(preset: "sunny" | "night" | "rainy" | "snowy" = "
 			weatherIntensity: "moderate",
 			temperature: 25,
 			daysSinceCreation: 10,
+			cloudCover: 0,
+			windSpeed: 10,
+			windDirection: 270,
 		},
 		night: {
 			timeOfDay: "night",
@@ -72,6 +125,9 @@ export function buildTestScene(preset: "sunny" | "night" | "rainy" | "snowy" = "
 			weatherIntensity: "moderate",
 			temperature: 18,
 			daysSinceCreation: 10,
+			cloudCover: 10,
+			windSpeed: 5,
+			windDirection: 90,
 		},
 		rainy: {
 			timeOfDay: "afternoon",
@@ -80,34 +136,30 @@ export function buildTestScene(preset: "sunny" | "night" | "rainy" | "snowy" = "
 			weatherIntensity: "heavy",
 			temperature: 12,
 			daysSinceCreation: 45,
+			cloudCover: 85,
+			windSpeed: 25,
+			windDirection: 270,
 		},
 		snowy: {
 			timeOfDay: "morning",
 			season: "winter",
 			weather: "snow",
 			weatherIntensity: "moderate",
-			temperature: -2,
+			temperature: -8,
 			daysSinceCreation: 120,
+			cloudCover: 70,
+			windSpeed: 15,
+			windDirection: 90,
 		},
 	};
 
 	const conditions = testConditions[preset];
 
-	return buildScene(conditions);
+	return buildScene(conditions, conditions.cloudCover);
 }
 
 /**
  * Construit une scène depuis la date/heure actuelles
- *
- * 🎓 Utilise les conditions réelles du système :
- * - Heure → timeOfDay
- * - Mois → season
- * - Date création → daysSinceCreation
- *
- * ⚠️ Météo par défaut = "clear" (sera remplacé par l'API plus tard)
- *
- * @param creationDate Date de création du monde (localStorage)
- * @returns Scene basée sur l'heure actuelle
  */
 export function buildSceneFromCurrentTime(creationDate: Date = new Date()): Scene {
 	const now = new Date();
@@ -124,16 +176,13 @@ export function buildSceneFromCurrentTime(creationDate: Date = new Date()): Scen
 	else timeOfDay = "dusk";
 
 	/* Détermine la saison */
-	const month = now.getMonth(); // 0-11
+	const month = now.getMonth();
 	let season: WorldConditions["season"];
 
-	if (month >= 2 && month <= 4)
-		season = "spring"; // Mars-Mai
-	else if (month >= 5 && month <= 7)
-		season = "summer"; // Juin-Août
-	else if (month >= 8 && month <= 10)
-		season = "autumn"; // Sept-Nov
-	else season = "winter"; // Déc-Fév
+	if (month >= 2 && month <= 4) season = "spring";
+	else if (month >= 5 && month <= 7) season = "summer";
+	else if (month >= 8 && month <= 10) season = "autumn";
+	else season = "winter";
 
 	/* Calcule les jours depuis la création */
 	const msPerDay = 1000 * 60 * 60 * 24;
@@ -146,10 +195,13 @@ export function buildSceneFromCurrentTime(creationDate: Date = new Date()): Scen
 	const conditions: WorldConditions = {
 		timeOfDay,
 		season,
-		weather: "clear", // À remplacer par API
+		weather: "clear",
 		weatherIntensity: "moderate",
-		temperature: 20, // À remplacer par API
+		temperature: 20,
 		daysSinceCreation,
+		cloudCover: 0,
+		windSpeed: 10,
+		windDirection: 270,
 	};
 
 	return buildScene(conditions);

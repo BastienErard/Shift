@@ -3,7 +3,7 @@ import type { WorldConditions, TimeOfDay, Season } from "./conditions";
 import { rgb } from "./types";
 import { isNight, isGoldenHour, hasSnowOnGround } from "./conditions";
 
-/* Palette de couleurs de Shift */
+/* Palette de couleurs enrichie de Shift */
 
 // ============================================================================
 // COULEURS DU CIEL
@@ -45,22 +45,55 @@ export function getSkyColor(conditions: WorldConditions): Color {
 }
 
 // ============================================================================
-// COULEURS DU SOL
+// COULEURS DU SOL - ENRICHIES AVEC NUANCES
 // ============================================================================
 
-/* Couleurs du sol selon la saison */
-const GROUND_COLORS: Record<Season, Color> = {
-	spring: rgb(124, 185, 82), // Vert printanier vif
-	summer: rgb(34, 139, 34), // Vert forêt
-	autumn: rgb(139, 90, 43), // Brun automnal
-	winter: rgb(34, 100, 34), // Vert foncé (sous la neige potentielle)
+/* Palette de sol enrichie par saison */
+export const GROUND_PALETTE: Record<
+	Season,
+	{
+		base: Color;
+		light: Color;
+		dark: Color;
+		accent: Color;
+	}
+> = {
+	spring: {
+		base: rgb(124, 185, 82), // Vert printanier vif
+		light: rgb(152, 210, 105), // Vert clair
+		dark: rgb(85, 140, 55), // Vert foncé
+		accent: rgb(180, 220, 140), // Vert très clair (nouvelles pousses)
+	},
+	summer: {
+		base: rgb(34, 139, 34), // Vert forêt
+		light: rgb(60, 165, 60), // Vert moyen
+		dark: rgb(20, 100, 20), // Vert très foncé
+		accent: rgb(90, 180, 90), // Vert lumineux
+	},
+	autumn: {
+		base: rgb(139, 90, 43), // Brun automnal
+		light: rgb(180, 130, 70), // Brun clair
+		dark: rgb(100, 65, 30), // Brun foncé
+		accent: rgb(160, 110, 50), // Brun doré
+	},
+	winter: {
+		base: rgb(34, 100, 34), // Vert foncé (sous la neige potentielle)
+		light: rgb(50, 120, 50), // Vert moyen froid
+		dark: rgb(20, 70, 20), // Vert très foncé
+		accent: rgb(70, 130, 70), // Vert grisé
+	},
 };
 
-/* Couleur du sol enneigé */
-const SNOW_GROUND_COLOR: Color = rgb(240, 248, 255); // Blanc neige
+/* Couleurs du sol enneigé */
+export const SNOW_PALETTE = {
+	base: rgb(240, 248, 255), // Blanc neige
+	light: rgb(255, 255, 255), // Blanc pur
+	shadow: rgb(200, 215, 230), // Ombre bleue
+	accent: rgb(220, 235, 250), // Neige brillante
+};
 
 /* Modificateur de sol pour la nuit (assombrit) */
-const NIGHT_GROUND_MODIFIER = 0.4; // 40% de luminosité
+const NIGHT_GROUND_MODIFIER = 0.4;
 
 /* Retourne la couleur du sol selon les conditions */
 export function getGroundColor(conditions: WorldConditions): Color {
@@ -68,10 +101,10 @@ export function getGroundColor(conditions: WorldConditions): Color {
 
 	// Sol enneigé en hiver
 	if (hasSnowOnGround(conditions)) {
-		return SNOW_GROUND_COLOR;
+		return SNOW_PALETTE.base;
 	}
 
-	let color = GROUND_COLORS[season];
+	let color = GROUND_PALETTE[season].base;
 
 	// Assombrit la nuit
 	if (isNight(conditions)) {
@@ -86,36 +119,103 @@ export function getGroundColor(conditions: WorldConditions): Color {
 	return color;
 }
 
+/* Retourne la palette complète du sol selon les conditions */
+export function getGroundPalette(conditions: WorldConditions): {
+	base: Color;
+	light: Color;
+	dark: Color;
+	accent: Color;
+} {
+	const { season } = conditions;
+
+	if (hasSnowOnGround(conditions)) {
+		return {
+			base: SNOW_PALETTE.base,
+			light: SNOW_PALETTE.light,
+			dark: SNOW_PALETTE.shadow,
+			accent: SNOW_PALETTE.accent,
+		};
+	}
+
+	let palette = { ...GROUND_PALETTE[season] };
+
+	if (isNight(conditions)) {
+		palette = {
+			base: darkenColor(palette.base, NIGHT_GROUND_MODIFIER),
+			light: darkenColor(palette.light, NIGHT_GROUND_MODIFIER),
+			dark: darkenColor(palette.dark, NIGHT_GROUND_MODIFIER),
+			accent: darkenColor(palette.accent, NIGHT_GROUND_MODIFIER),
+		};
+	}
+
+	if (conditions.weather === "rain" || conditions.weather === "storm") {
+		palette = {
+			base: darkenColor(palette.base, 0.8),
+			light: darkenColor(palette.light, 0.8),
+			dark: darkenColor(palette.dark, 0.8),
+			accent: darkenColor(palette.accent, 0.8),
+		};
+	}
+
+	return palette;
+}
+
 // ============================================================================
-// COULEURS DE LA MAISON
+// COULEURS DE LA MAISON - COTTAGE RUSTIQUE
 // ============================================================================
 
-/* Palette de la maison */
+/* Palette de la maison cottage */
 export const HOUSE_PALETTE = {
-	wall: {
-		base: rgb(210, 180, 140), // Beige/brun clair
-		night: rgb(105, 90, 70), // Assombri la nuit
+	// Murs en pierre
+	stone: {
+		base: rgb(160, 150, 140), // Pierre grise
+		light: rgb(185, 175, 165), // Pierre claire
+		dark: rgb(120, 110, 100), // Pierre foncée
+		night: rgb(80, 75, 70),
 	},
+	// Bois (poutres, volets)
+	wood: {
+		base: rgb(101, 67, 33), // Brun bois
+		light: rgb(140, 100, 60), // Bois clair
+		dark: rgb(70, 45, 20), // Bois foncé
+		night: rgb(50, 33, 17),
+	},
+	// Toit en chaume/tuiles
 	roof: {
-		base: rgb(178, 34, 34), // Rouge brique
-		night: rgb(89, 17, 17), // Assombri la nuit
+		base: rgb(139, 119, 101), // Chaume/tuiles brun
+		light: rgb(165, 145, 125), // Chaume clair
+		dark: rgb(100, 85, 70), // Chaume foncé
+		night: rgb(70, 60, 50),
 	},
 	roofTop: {
-		base: rgb(139, 0, 0), // Rouge foncé (faîtage)
-		night: rgb(69, 0, 0),
+		base: rgb(120, 100, 80), // Faîtage
+		night: rgb(60, 50, 40),
 	},
+	// Porte
 	door: {
-		base: rgb(101, 67, 33), // Brun foncé
-		night: rgb(51, 34, 17),
+		base: rgb(90, 55, 25), // Porte en bois foncé
+		light: rgb(120, 80, 45),
+		night: rgb(45, 28, 12),
 	},
+	// Fenêtres
 	window: {
-		day: rgb(135, 206, 250), // Bleu ciel (reflet)
-		night: rgb(255, 215, 0), // Jaune chaud (lumière intérieure)
+		day: rgb(135, 206, 250), // Reflet ciel
+		night: rgb(255, 200, 100), // Lumière chaude
 		goldenHour: rgb(255, 200, 150), // Reflet doré
+		frame: rgb(240, 235, 220), // Cadre blanc cassé
+		frameNight: rgb(120, 117, 110),
 	},
+	// Cheminée
 	chimney: {
-		base: rgb(128, 64, 64), // Brique sombre
-		night: rgb(64, 32, 32),
+		base: rgb(140, 90, 70), // Brique
+		dark: rgb(100, 65, 50),
+		night: rgb(70, 45, 35),
+	},
+	// Éléments décoratifs
+	details: {
+		flower: rgb(220, 80, 100), // Fleurs roses
+		flowerLeaf: rgb(60, 130, 60), // Feuilles
+		planter: rgb(160, 82, 45), // Jardinière terre cuite
 	},
 };
 
@@ -125,34 +225,110 @@ export function getHouseColors(conditions: WorldConditions) {
 	const golden = isGoldenHour(conditions);
 
 	return {
-		wall: night ? HOUSE_PALETTE.wall.night : HOUSE_PALETTE.wall.base,
+		// Murs en pierre
+		wall: night ? HOUSE_PALETTE.stone.night : HOUSE_PALETTE.stone.base,
+		wallLight: night ? HOUSE_PALETTE.stone.night : HOUSE_PALETTE.stone.light,
+		wallDark: night
+			? darkenColor(HOUSE_PALETTE.stone.night, 0.8)
+			: HOUSE_PALETTE.stone.dark,
+
+		// Bois
+		wood: night ? HOUSE_PALETTE.wood.night : HOUSE_PALETTE.wood.base,
+		woodLight: night ? HOUSE_PALETTE.wood.night : HOUSE_PALETTE.wood.light,
+		woodDark: night
+			? darkenColor(HOUSE_PALETTE.wood.night, 0.8)
+			: HOUSE_PALETTE.wood.dark,
+
+		// Toit
 		roof: night ? HOUSE_PALETTE.roof.night : HOUSE_PALETTE.roof.base,
+		roofLight: night ? HOUSE_PALETTE.roof.night : HOUSE_PALETTE.roof.light,
+		roofDark: night
+			? darkenColor(HOUSE_PALETTE.roof.night, 0.8)
+			: HOUSE_PALETTE.roof.dark,
 		roofTop: night ? HOUSE_PALETTE.roofTop.night : HOUSE_PALETTE.roofTop.base,
+
+		// Porte
 		door: night ? HOUSE_PALETTE.door.night : HOUSE_PALETTE.door.base,
+		doorLight: night ? HOUSE_PALETTE.door.night : HOUSE_PALETTE.door.light,
+
+		// Fenêtres
 		window: night
 			? HOUSE_PALETTE.window.night
 			: golden
 				? HOUSE_PALETTE.window.goldenHour
 				: HOUSE_PALETTE.window.day,
+		windowFrame: night
+			? HOUSE_PALETTE.window.frameNight
+			: HOUSE_PALETTE.window.frame,
+
+		// Cheminée
 		chimney: night ? HOUSE_PALETTE.chimney.night : HOUSE_PALETTE.chimney.base,
+		chimneyDark: night
+			? darkenColor(HOUSE_PALETTE.chimney.night, 0.8)
+			: HOUSE_PALETTE.chimney.dark,
+
+		// Décorations
+		flower: night
+			? darkenColor(HOUSE_PALETTE.details.flower, 0.4)
+			: HOUSE_PALETTE.details.flower,
+		flowerLeaf: night
+			? darkenColor(HOUSE_PALETTE.details.flowerLeaf, 0.4)
+			: HOUSE_PALETTE.details.flowerLeaf,
+		planter: night
+			? darkenColor(HOUSE_PALETTE.details.planter, 0.4)
+			: HOUSE_PALETTE.details.planter,
 	};
 }
 
 // ============================================================================
-// COULEURS DE L'ARBRE
+// COULEURS DES ARBRES - ENRICHIES PAR SAISON
 // ============================================================================
 
-/* Palette de l'arbre selon la saison */
+/* Palette de l'arbre selon la saison - Multiple nuances */
 export const TREE_PALETTE = {
 	trunk: {
 		base: rgb(101, 67, 33), // Brun
-		night: rgb(51, 34, 17), // Brun très foncé
+		light: rgb(130, 90, 50), // Brun clair
+		dark: rgb(70, 45, 20), // Brun foncé
+		night: rgb(51, 34, 17),
 	},
 	foliage: {
-		spring: [rgb(144, 238, 144), rgb(124, 205, 124), rgb(100, 180, 100)], // Verts clairs
-		summer: [rgb(34, 139, 34), rgb(50, 205, 50), rgb(34, 139, 34)], // Verts vifs
-		autumn: [rgb(255, 140, 0), rgb(255, 100, 0), rgb(200, 80, 0)], // Oranges
-		winter: [rgb(139, 137, 137), rgb(120, 120, 120), rgb(100, 100, 100)], // Gris (branches nues)
+		spring: {
+			colors: [
+				rgb(144, 238, 144), // Vert clair
+				rgb(124, 205, 124), // Vert moyen
+				rgb(100, 180, 100), // Vert foncé
+			],
+			highlight: rgb(180, 255, 180), // Reflet
+			shadow: rgb(80, 150, 80), // Ombre
+		},
+		summer: {
+			colors: [
+				rgb(34, 139, 34), // Vert forêt
+				rgb(50, 160, 50), // Vert vif
+				rgb(40, 120, 40), // Vert profond
+			],
+			highlight: rgb(70, 180, 70),
+			shadow: rgb(20, 90, 20),
+		},
+		autumn: {
+			colors: [
+				rgb(255, 140, 0), // Orange vif
+				rgb(220, 100, 20), // Orange foncé
+				rgb(180, 60, 20), // Rouge-orange
+			],
+			highlight: rgb(255, 180, 60),
+			shadow: rgb(150, 50, 10),
+		},
+		winter: {
+			colors: [
+				rgb(139, 137, 137), // Gris (branches)
+				rgb(120, 118, 118), // Gris moyen
+				rgb(100, 98, 98), // Gris foncé
+			],
+			highlight: rgb(160, 158, 158),
+			shadow: rgb(80, 78, 78),
+		},
 	},
 };
 
@@ -162,15 +338,103 @@ export function getTreeColors(conditions: WorldConditions) {
 	const night = isNight(conditions);
 
 	let trunk = TREE_PALETTE.trunk.base;
-	let foliage = TREE_PALETTE.foliage[season];
+	let trunkLight = TREE_PALETTE.trunk.light;
+	let trunkDark = TREE_PALETTE.trunk.dark;
+	const foliageData = TREE_PALETTE.foliage[season];
+	let foliage = foliageData.colors;
+	let highlight = foliageData.highlight;
+	let shadow = foliageData.shadow;
 
 	if (night) {
 		trunk = TREE_PALETTE.trunk.night;
-		// Assombrit le feuillage la nuit
+		trunkLight = darkenColor(TREE_PALETTE.trunk.light, 0.4);
+		trunkDark = darkenColor(TREE_PALETTE.trunk.dark, 0.4);
 		foliage = foliage.map((color) => darkenColor(color, 0.4));
+		highlight = darkenColor(highlight, 0.4);
+		shadow = darkenColor(shadow, 0.4);
 	}
 
-	return { trunk, foliage };
+	return { trunk, trunkLight, trunkDark, foliage, highlight, shadow };
+}
+
+// ============================================================================
+// COULEURS DE LA RIVIÈRE
+// ============================================================================
+
+export const RIVER_PALETTE = {
+	// Eau par saison
+	water: {
+		spring: {
+			base: rgb(100, 180, 220), // Bleu clair printanier
+			light: rgb(140, 200, 235), // Reflets
+			dark: rgb(60, 140, 180), // Profondeur
+			foam: rgb(220, 240, 255), // Écume
+		},
+		summer: {
+			base: rgb(70, 150, 200), // Bleu vif
+			light: rgb(110, 180, 220), // Reflets
+			dark: rgb(40, 110, 160), // Profondeur
+			foam: rgb(200, 230, 255),
+		},
+		autumn: {
+			base: rgb(80, 130, 160), // Bleu-gris
+			light: rgb(110, 160, 190), // Reflets ternes
+			dark: rgb(50, 90, 120), // Profondeur
+			foam: rgb(180, 200, 220),
+		},
+		winter: {
+			base: rgb(150, 180, 200), // Bleu glacé
+			light: rgb(180, 210, 230), // Reflets glacés
+			dark: rgb(100, 140, 170), // Profondeur froide
+			foam: rgb(230, 245, 255),
+		},
+	},
+	// Glace (hiver froid)
+	ice: {
+		base: rgb(200, 220, 240), // Glace
+		light: rgb(230, 245, 255), // Reflet
+		crack: rgb(150, 180, 210), // Fissures
+	},
+	// Berges
+	bank: {
+		mud: rgb(90, 70, 50), // Boue
+		rocks: rgb(130, 125, 120), // Rochers
+		rocksLight: rgb(160, 155, 150),
+		rocksDark: rgb(100, 95, 90),
+	},
+};
+
+/* Retourne les couleurs de la rivière selon les conditions */
+export function getRiverColors(conditions: WorldConditions) {
+	const { season, temperature } = conditions;
+	const night = isNight(conditions);
+
+	// Rivière gelée si température très froide (indépendamment de la saison)
+	const isFrozen = temperature < -5;
+
+	let water = RIVER_PALETTE.water[season];
+	const bank = RIVER_PALETTE.bank;
+
+	if (night) {
+		water = {
+			base: darkenColor(water.base, 0.5),
+			light: darkenColor(water.light, 0.5),
+			dark: darkenColor(water.dark, 0.5),
+			foam: darkenColor(water.foam, 0.6),
+		};
+	}
+
+	return {
+		isFrozen,
+		water,
+		ice: RIVER_PALETTE.ice,
+		bank: {
+			mud: night ? darkenColor(bank.mud, 0.4) : bank.mud,
+			rocks: night ? darkenColor(bank.rocks, 0.4) : bank.rocks,
+			rocksLight: night ? darkenColor(bank.rocksLight, 0.4) : bank.rocksLight,
+			rocksDark: night ? darkenColor(bank.rocksDark, 0.4) : bank.rocksDark,
+		},
+	};
 }
 
 // ============================================================================
@@ -188,11 +452,36 @@ export const CELESTIAL_PALETTE = {
 	stars: rgb(255, 255, 255), // Blanc pur
 	starsDim: rgb(200, 200, 200), // Blanc atténué (étoiles lointaines)
 	clouds: {
-		day: rgb(255, 255, 255), // Blanc
-		golden: rgb(255, 200, 150), // Teinté doré
-		night: rgb(60, 60, 80), // Gris bleuté sombre
-		rain: rgb(128, 128, 128), // Gris
-		storm: rgb(80, 80, 90), // Gris foncé
+		day: {
+			base: rgb(255, 255, 255), // Blanc
+			light: rgb(255, 255, 255), // Blanc pur
+			shadow: rgb(220, 225, 235), // Ombre légère
+			deep: rgb(190, 200, 215), // Ombre profonde
+		},
+		golden: {
+			base: rgb(255, 220, 180), // Doré
+			light: rgb(255, 240, 210), // Doré clair
+			shadow: rgb(255, 180, 130), // Orange
+			deep: rgb(240, 150, 100), // Orange foncé
+		},
+		night: {
+			base: rgb(60, 60, 80), // Gris bleuté
+			light: rgb(80, 80, 100), // Gris clair
+			shadow: rgb(40, 40, 60), // Gris foncé
+			deep: rgb(25, 25, 45), // Très foncé
+		},
+		rain: {
+			base: rgb(140, 145, 155), // Gris pluie
+			light: rgb(160, 165, 175), // Gris clair
+			shadow: rgb(110, 115, 125), // Gris foncé
+			deep: rgb(85, 90, 100), // Très foncé
+		},
+		storm: {
+			base: rgb(80, 80, 90), // Gris orageux
+			light: rgb(100, 100, 110), // Gris moyen
+			shadow: rgb(55, 55, 65), // Gris foncé
+			deep: rgb(35, 35, 45), // Presque noir
+		},
 	},
 };
 
@@ -206,16 +495,27 @@ export function getSunColor(conditions: WorldConditions): Color {
 	return CELESTIAL_PALETTE.sun.day;
 }
 
-/* Retourne la couleur des nuages selon les conditions */
-export function getCloudColor(conditions: WorldConditions): Color {
+/* Retourne la palette des nuages selon les conditions */
+export function getCloudPalette(conditions: WorldConditions): {
+	base: Color;
+	light: Color;
+	shadow: Color;
+	deep: Color;
+} {
 	const { weather } = conditions;
 
 	if (isNight(conditions)) return CELESTIAL_PALETTE.clouds.night;
 	if (isGoldenHour(conditions)) return CELESTIAL_PALETTE.clouds.golden;
 	if (weather === "storm") return CELESTIAL_PALETTE.clouds.storm;
-	if (weather === "rain" || weather === "cloudy") return CELESTIAL_PALETTE.clouds.rain;
+	if (weather === "rain" || weather === "cloudy")
+		return CELESTIAL_PALETTE.clouds.rain;
 
 	return CELESTIAL_PALETTE.clouds.day;
+}
+
+/* Retourne la couleur des nuages (rétrocompatibilité) */
+export function getCloudColor(conditions: WorldConditions): Color {
+	return getCloudPalette(conditions).base;
 }
 
 // ============================================================================
@@ -246,15 +546,11 @@ export function getPrecipitationColor(conditions: WorldConditions): Color {
 }
 
 // ============================================================================
-// FONCTIONS UTILITAIRES INTERNES
+// FONCTIONS UTILITAIRES
 // ============================================================================
 
 /**
  * Interpole simplement entre deux couleurs
- *
- * @param from Couleur de départ
- * @param to Couleur d'arrivée
- * @param t Facteur (0 = from, 1 = to)
  */
 function lerpColorSimple(from: Color, to: Color, t: number): Color {
 	return {
@@ -266,14 +562,29 @@ function lerpColorSimple(from: Color, to: Color, t: number): Color {
 
 /**
  * Assombrit une couleur
- *
- * @param color Couleur à assombrir
- * @param factor Facteur (0 = noir, 1 = original)
  */
-function darkenColor(color: Color, factor: number): Color {
+export function darkenColor(color: Color, factor: number): Color {
 	return {
 		r: Math.round(color.r * factor),
 		g: Math.round(color.g * factor),
 		b: Math.round(color.b * factor),
 	};
+}
+
+/**
+ * Éclaircit une couleur
+ */
+export function lightenColor(color: Color, factor: number): Color {
+	return {
+		r: Math.min(255, Math.round(color.r + (255 - color.r) * factor)),
+		g: Math.min(255, Math.round(color.g + (255 - color.g) * factor)),
+		b: Math.min(255, Math.round(color.b + (255 - color.b) * factor)),
+	};
+}
+
+/**
+ * Mélange deux couleurs
+ */
+export function blendColors(color1: Color, color2: Color, ratio: number): Color {
+	return lerpColorSimple(color1, color2, ratio);
 }

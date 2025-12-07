@@ -193,9 +193,12 @@ export function hasPrecipitation(conditions: WorldConditions): boolean {
 	);
 }
 
-/* Vérifie si le sol devrait être enneigé */
+/* Vérifie si le sol devrait être enneigé
+ * Basé sur la température et/ou la météo, indépendamment de la saison
+ */
 export function hasSnowOnGround(conditions: WorldConditions): boolean {
-	return (
-		conditions.season === "winter" && (conditions.weather === "snow" || conditions.temperature < 2)
-	);
+	// Neige au sol si :
+	// 1. Il neige actuellement (quel que soit la saison)
+	// 2. OU la température est très froide (< 0°C) - la neige reste au sol
+	return conditions.weather === "snow" || conditions.temperature < 0;
 }

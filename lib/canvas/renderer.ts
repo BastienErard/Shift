@@ -59,14 +59,40 @@ function drawSky(ctx: CanvasRenderingContext2D, scene: Scene): void {
 	ctx.fillRect(0, 0, width, height);
 }
 
-/* Dessine le sol */
+/* Dessine le sol avec dégradé pour la zone de la forêt */
 function drawGround(ctx: CanvasRenderingContext2D, scene: Scene): void {
 	const { width, height } = scene.dimensions;
 
 	// Sol (40% inférieur)
 	const horizonY = height * 0.4;
+	const groundHeight = height - horizonY;
+
+	// Zone de la forêt (proche de l'horizon) : dégradé du ciel vers le sol
+	// Cela évite l'effet "monobloc vert foncé" derrière les arbres
+	const forestZoneHeight = groundHeight * 0.18; // 18% du sol = zone forêt
+
+	// Créer un dégradé vertical du ciel vers le sol pour la zone forêt
+	const gradient = ctx.createLinearGradient(0, horizonY, 0, horizonY + forestZoneHeight);
+	gradient.addColorStop(0, colorToString(scene.skyColor)); // Commence avec la couleur du ciel
+	gradient.addColorStop(0.4, colorToString(blendColors(scene.skyColor, scene.groundColor, 0.3))); // Transition
+	gradient.addColorStop(1, colorToString(scene.groundColor)); // Termine avec la couleur du sol
+
+	// Dessine la zone de dégradé (forêt)
+	ctx.fillStyle = gradient;
+	ctx.fillRect(0, horizonY, width, forestZoneHeight);
+
+	// Dessine le reste du sol (couleur unie)
 	ctx.fillStyle = colorToString(scene.groundColor);
-	ctx.fillRect(0, horizonY, width, height - horizonY);
+	ctx.fillRect(0, horizonY + forestZoneHeight, width, groundHeight - forestZoneHeight);
+}
+
+/* Mélange deux couleurs */
+function blendColors(color1: Color, color2: Color, ratio: number): Color {
+	return {
+		r: Math.round(color1.r * (1 - ratio) + color2.r * ratio),
+		g: Math.round(color1.g * (1 - ratio) + color2.g * ratio),
+		b: Math.round(color1.b * (1 - ratio) + color2.b * ratio),
+	};
 }
 
 /* Dessine un élément selon son type */

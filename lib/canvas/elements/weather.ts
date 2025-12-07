@@ -8,6 +8,9 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../types";
 import { hasPrecipitation } from "../conditions";
 import { getCloudBottomY } from "./sky";
 
+// Les précipitations commencent depuis le haut de l'écran
+const PRECIPITATION_START_Y = 0;
+
 // 🆕 Séquence de timings d'éclairs pré-générée (fixe)
 // Format: [frameStart, duration, xPosition, shapeIndex, size]
 const LIGHTNING_SEQUENCE: Array<[number, number, number, number, number]> = [
@@ -60,8 +63,9 @@ export function createRain(conditions: WorldConditions, animationOffset: number 
 
 	const { width: dropWidth, height: dropHeight } = dropDimensions[weatherIntensity];
 
-	const startY = getCloudBottomY(conditions);
-	const totalFallDistance = CANVAS_HEIGHT - startY + dropHeight * 2;
+	// La pluie commence depuis le haut de l'écran (Y=0)
+	const startY = PRECIPITATION_START_Y;
+	const totalFallDistance = CANVAS_HEIGHT + dropHeight * 2;
 
 	const fallSpeeds = {
 		light: 4,
@@ -96,7 +100,8 @@ export function createRain(conditions: WorldConditions, animationOffset: number 
 			x >= -dropWidth &&
 			x <= CANVAS_WIDTH + dropWidth
 		) {
-			elements.push(rectangle(x, y, dropWidth, dropHeight, color));
+			// z-index "sky" pour que la pluie soit derrière les nuages
+			elements.push(rectangle(x, y, dropWidth, dropHeight, color, "sky"));
 		}
 	}
 
@@ -124,8 +129,9 @@ export function createSnow(conditions: WorldConditions, animationOffset: number 
 
 	const flakeCount = flakeCounts[weatherIntensity];
 
-	const startY = getCloudBottomY(conditions);
-	const totalFallDistance = CANVAS_HEIGHT - startY + 50;
+	// La neige commence depuis le haut de l'écran (Y=0)
+	const startY = PRECIPITATION_START_Y;
+	const totalFallDistance = CANVAS_HEIGHT + 50;
 
 	const fallSpeeds = {
 		light: 0.8,
@@ -164,12 +170,13 @@ export function createSnow(conditions: WorldConditions, animationOffset: number 
 		const size = 3 + ((i * 13) % 5);
 
 		if (y >= startY - size && y <= CANVAS_HEIGHT && x >= -size && x <= CANVAS_WIDTH + size) {
-			elements.push(rectangle(x, y, size, size, color));
+			// z-index "sky" pour que la neige soit derrière les nuages
+			elements.push(rectangle(x, y, size, size, color, "sky"));
 
 			if (size >= 5) {
 				const outlineColor = { r: 200, g: 210, b: 220 };
-				elements.push(rectangle(x - 1, y - 1, size + 2, size + 2, outlineColor));
-				elements.push(rectangle(x, y, size, size, color));
+				elements.push(rectangle(x - 1, y - 1, size + 2, size + 2, outlineColor, "sky"));
+				elements.push(rectangle(x, y, size, size, color, "sky"));
 			}
 		}
 	}
