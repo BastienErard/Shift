@@ -14,7 +14,7 @@ export default function Footer() {
 					{/* Copyright */}
 					<p className="text-sm text-gray-500 dark:text-gray-400">
 						© {currentYear}{" "}
-						<span className="font-medium text-gray-700 dark:text-gray-300">Bastien Erard</span> ·
+						<a href="https://www.bastienerard.dev" target="_blank" rel="noopener noreferrer" className="font-medium text-gray-700 dark:text-gray-300 hover:text-sky-500 dark:hover:text-sky-400 transition-colors">Bastien Erard</a> ·
 						Lausanne, Suisse
 					</p>
 

@@ -7,6 +7,7 @@ import { routing, type Locale } from "@/i18n/routing";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
 import { JsonLd } from "@/components/JsonLd";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -45,7 +46,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 			locale: locale === "fr" ? "fr_FR" : "en_US",
 			alternateLocale: locale === "fr" ? "en_US" : "fr_FR",
 			type: "website",
-	images: [
+			images: [
 				{
 					url: `${baseUrl}/opengraph-image`,
 					width: 1200,
@@ -150,6 +151,8 @@ export default async function LocaleLayout({
 						<Footer />
 					</div>
 				</NextIntlClientProvider>
+				<Analytics />
+				<SpeedInsights />
 			</body>
 		</html>
 	);
