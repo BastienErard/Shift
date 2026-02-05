@@ -152,7 +152,6 @@ export default async function LocaleLayout({
 					</div>
 				</NextIntlClientProvider>
 				<Analytics />
-				<SpeedInsights />
 			</body>
 		</html>
 	);
